@@ -1,0 +1,960 @@
+<title>Knowledge Shapes Ideas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a lab notebook on graph paper. Home = route map of four "worlds"; each world = tabs (Read / Cards / Quiz / Play). */
+:root{
+  --bg:#e9edf2; --grid:rgba(40,70,120,.07); --surface:#fbfcfe; --surface-2:#f1f4f8;
+  --ink:#172033; --muted:#566079; --line:#d3dae4;
+  --kuhn:#b3264f; --ch5:#a86b0c; --ward:#0c7f74; --shane:#5646c0;
+  --good:#23804a; --good-bg:#e3f3e8; --bad:#b83333; --bad-bg:#f8e4e4;
+  --a-feather:#6aa7d8; --a-fur:#c98b52; --a-scale:#4fae8e; --a-slime:#b58ad9;
+  --planet-molten:#5a1d12; --lava:#f07a28; --planet-windy:#c9d8e6; --planet-ocean:#1f5c86; --planet-plain:#d9d2e8;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f131b; --grid:rgba(150,180,230,.05); --surface:#171d29; --surface-2:#1e2533;
+  --ink:#e5e9f1; --muted:#9aa4b9; --line:#2b3446;
+  --kuhn:#f0668f; --ch5:#e8ae45; --ward:#3cc8b6; --shane:#a295f7;
+  --good:#5fcf8a; --good-bg:#18332a; --bad:#f07b7b; --bad-bg:#3a1f24;
+  --a-feather:#7fb8e6; --a-fur:#d49a63; --a-scale:#5fc3a0; --a-slime:#c49ee6;
+  --planet-molten:#3d130b; --lava:#ff8a3a; --planet-windy:#2c3a4a; --planet-ocean:#15405f; --planet-plain:#2d2940;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f131b; --grid:rgba(150,180,230,.05); --surface:#171d29; --surface-2:#1e2533;
+  --ink:#e5e9f1; --muted:#9aa4b9; --line:#2b3446;
+  --kuhn:#f0668f; --ch5:#e8ae45; --ward:#3cc8b6; --shane:#a295f7;
+  --good:#5fcf8a; --good-bg:#18332a; --bad:#f07b7b; --bad-bg:#3a1f24;
+  --a-feather:#7fb8e6; --a-fur:#d49a63; --a-scale:#5fc3a0; --a-slime:#c49ee6;
+  --planet-molten:#3d130b; --lava:#ff8a3a; --planet-windy:#2c3a4a; --planet-ocean:#15405f; --planet-plain:#2d2940;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background-color:var(--bg); color:var(--ink); font:16px/1.55 var(--f-body);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px; min-height:100vh;
+}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:0 64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.12}
+h1{font-size:clamp(2rem,6vw,3.3rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.55rem;font-weight:700}
+h3{font-size:1.12rem;font-weight:700}
+p{margin:0}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,.tab:focus-visible{outline:3px solid var(--acc,var(--shane));outline-offset:2px}
+.btn{border:1.5px solid var(--ink);background:var(--surface);border-radius:999px;padding:9px 18px;font-weight:700;display:inline-flex;gap:8px;align-items:center}
+.btn.primary{background:var(--acc,var(--ink));border-color:var(--acc,var(--ink));color:var(--surface)}
+.btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar-in{max-width:980px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-family:var(--f-display);font-weight:800;font-size:1.05rem;background:none;border:0;padding:0}
+.xp{margin-left:auto;display:flex;align-items:center;gap:10px;min-width:0}
+.xp-track{width:120px;height:8px;border-radius:9px;background:var(--line);overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--kuhn),var(--ch5),var(--ward),var(--shane));transition:width .5s}
+.xp-label{font-family:var(--f-mono);font-size:.74rem;white-space:nowrap}
+
+/* home */
+.hero{padding-block:36px 22px;display:grid;gap:14px}
+.hero .lede{font-size:1.12rem;max-width:62ch}
+.route{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin-top:10px}
+.world{position:relative;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:8px;align-content:start}
+.world:hover{border-color:var(--acc)}
+.world .step{font-family:var(--f-mono);font-size:.72rem;color:var(--acc);letter-spacing:.08em;text-transform:uppercase}
+.world .who{font-size:.9rem;color:var(--muted)}
+.world .tag{font-size:.95rem}
+.ring{display:flex;align-items:center;gap:8px;margin-top:6px;font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
+.ring-track{flex:1;height:6px;border-radius:6px;background:var(--surface-2);overflow:hidden}
+.ring-fill{height:100%;background:var(--acc)}
+.glyph{width:42px;height:42px}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:36px;margin-bottom:12px}
+.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.panel{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:10px;align-content:start;min-width:0}
+.synth{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.93rem}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td b{font-family:var(--f-display)}
+
+/* module */
+.mhead{padding-block:22px 6px;display:grid;gap:8px}
+.back{background:none;border:0;padding:0;color:var(--muted);font-weight:700;justify-self:start}
+.mhead h1{font-size:clamp(1.7rem,5vw,2.6rem);color:var(--ink)}
+.mhead .oneliner{font-size:1.08rem;max-width:66ch;border-left:4px solid var(--acc);padding-left:12px}
+.tabs{display:flex;gap:6px;margin:16px 0 18px;border-bottom:1.5px solid var(--line);overflow-x:auto}
+.tab{background:none;border:0;padding:10px 14px;font-weight:700;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-color:var(--acc)}
+.tab .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--good);margin-left:6px;vertical-align:middle}
+
+.read{display:grid;gap:14px}
+.chunk{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:18px 20px;display:grid;gap:10px;min-width:0}
+.chunk .num{font-family:var(--f-mono);font-size:.72rem;color:var(--acc);letter-spacing:.08em}
+.chunk p,.chunk li{max-width:68ch}
+.chunk ul{margin:0;padding-left:1.2em;display:grid;gap:6px}
+.chunk em.k{font-style:normal;font-weight:700;color:var(--acc)}
+.aha{background:var(--surface-2);border-radius:8px;padding:10px 12px;font-size:.95rem}
+.aha b{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);display:block;margin-bottom:2px}
+.remember{counter-reset:r;display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.remember li{counter-increment:r;display:grid;grid-template-columns:30px 1fr;gap:8px}
+.remember li::before{content:counter(r);font-family:var(--f-display);font-weight:800;color:var(--acc);font-size:1.2rem;line-height:1.3}
+.done-read{justify-self:start}
+
+/* flashcards */
+.fc-wrap{display:grid;gap:14px;justify-items:center}
+.fc{width:min(560px,100%);aspect-ratio:16/10;max-width:100%;perspective:1200px;background:none;border:0;padding:0}
+.fc-in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.fc.flipped .fc-in{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:22px;text-align:center}
+.fc-face.front{border-top:6px solid var(--acc)}
+.fc-face.back{transform:rotateY(180deg);background:var(--surface-2)}
+.fc-term{font-family:var(--f-display);font-size:clamp(1.3rem,4vw,2rem);font-weight:800}
+.fc-def{font-size:1.05rem;max-width:44ch}
+.fc-hint{position:absolute;bottom:10px;left:0;right:0;font-family:var(--f-mono);font-size:.7rem;color:var(--muted);letter-spacing:.06em}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center}
+
+/* quiz */
+.q-card{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:14px;max-width:720px;margin:0 auto}
+.q-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.q-text{font-family:var(--f-display);font-size:1.25rem;font-weight:700;line-height:1.25}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:11px 14px;display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start}
+.opt:hover:not(:disabled){border-color:var(--acc)}
+.opt .l{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);padding-top:2px}
+.opt.right{border-color:var(--good);background:var(--good-bg)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt:disabled{cursor:default}
+.why{border-left:4px solid var(--acc);padding:8px 12px;background:var(--surface-2);border-radius:0 8px 8px 0}
+.pips{display:flex;gap:4px;flex-wrap:wrap}
+.pip{width:18px;height:6px;border-radius:4px;background:var(--line)}
+.pip.ok{background:var(--good)} .pip.no{background:var(--bad)} .pip.now{background:var(--acc)}
+.result{text-align:center;display:grid;gap:12px;justify-items:center}
+.big{font-family:var(--f-display);font-weight:800;font-size:3rem;color:var(--acc);line-height:1}
+
+/* games */
+.games{display:grid;gap:16px}
+.game{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:12px;min-width:0}
+.game-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.badge{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid var(--good);color:var(--good);border-radius:999px;padding:2px 8px}
+.sort-item{font-family:var(--f-display);font-size:1.15rem;font-weight:700;text-align:center;padding:18px;border:1.5px dashed var(--acc);border-radius:10px;background:var(--surface-2)}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bin{border:1.5px solid var(--line);border-radius:10px;background:var(--surface);padding:14px 10px;font-weight:700;display:grid;gap:4px;justify-items:center;text-align:center}
+.bin small{font-weight:400;color:var(--muted);font-size:.8rem}
+.bin:hover{border-color:var(--acc)}
+.feedback{min-height:1.5em;font-size:.95rem}
+.feedback.ok{color:var(--good)} .feedback.no{color:var(--bad)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:.95rem;text-align:left}
+.chip:hover:not(:disabled){border-color:var(--acc)}
+.chip.used{opacity:.35;cursor:default}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.seq{display:grid;gap:6px;counter-reset:s;margin:0;padding:0;list-style:none}
+.seq li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:8px;padding:8px 10px;border-radius:8px;background:var(--surface-2)}
+.seq li::before{content:counter(s);font-family:var(--f-mono);color:var(--acc)}
+.seq li.slot{background:none;border:1.5px dashed var(--line);color:var(--muted)}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:grid;gap:8px;align-content:start;min-width:0}
+.m-item{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 11px;font-size:.9rem}
+.m-item.sel{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}
+.m-item.locked{border-color:var(--good);background:var(--good-bg);cursor:default}
+.m-item .tagn{font-family:var(--f-mono);font-size:.68rem;color:var(--muted);display:block}
+
+/* alien lab */
+.lab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.lab svg{width:100%;height:auto;border-radius:10px;border:1.5px solid var(--line);display:block}
+.ctl{display:grid;gap:10px;align-content:start}
+.ctl fieldset{border:0;padding:0;margin:0;display:grid;gap:6px}
+.ctl legend{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:.88rem}
+.seg button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--surface);font-weight:700}
+.report{display:grid;gap:8px}
+.report li{max-width:70ch}
+.meter{display:flex;gap:6px;flex-wrap:wrap}
+.meter span{font-family:var(--f-mono);font-size:.72rem;padding:4px 8px;border-radius:6px;background:var(--good-bg);color:var(--good)}
+.meter span.off{background:var(--bad-bg);color:var(--bad)}
+
+/* discussion */
+details.disc{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:14px 16px}
+details.disc summary{cursor:pointer;font-family:var(--f-display);font-weight:700;font-size:1.05rem;list-style:none;display:grid;grid-template-columns:auto 1fr;gap:10px}
+details.disc summary::-webkit-details-marker{display:none}
+details.disc summary .mono{color:var(--acc);padding-top:4px}
+details.disc[open] summary{margin-bottom:10px}
+details.disc .ans{display:grid;gap:8px;padding-left:4px}
+.discs{display:grid;gap:10px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--surface);padding:8px 16px;border-radius:999px;font-weight:700;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (max-width:640px){
+  .lab{grid-template-columns:1fr}
+  .match{grid-template-columns:1fr 1fr}
+  .xp-track{width:70px}
+  .fc{aspect-ratio:4/3}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+
+<header class="bar"><div class="bar-in">
+  <button class="brand" id="brand" type="button">Knowledge Shapes Ideas</button>
+  <div class="xp"><span class="xp-label" id="lvl">Level 1</span><div class="xp-track"><div class="xp-fill" id="xpfill" style="width:0%"></div></div><span class="xp-label" id="xpn">0 XP</span></div>
+</div></header>
+<main class="wrap" id="app"></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============================ CONTENT ============================ */
+const MODULES = [
+{
+  id:"kuhn", acc:"--kuhn", step:"Stop 1 · the frame",
+  title:"Scientific Revolutions", who:"Kuhn (1962), Ch. IX",
+  tag:"Why science doesn't just pile up knowledge, and why switching paradigms looks like a political revolution.",
+  oneLiner:"New paradigms must replace old, incompatible ones. Each paradigm brings its own problems and standards, so logic and experiment alone can't settle the choice. It works more like a political revolution.",
+  read:[
+    {h:"The setup", body:`<p>A <em class="k">paradigm</em> is a shared, exemplary achievement (theory, methods, standards) that guides a community. Under it, scientists do <em class="k">normal science</em>: solving the puzzles the paradigm defines. Some results refuse to fit (<em class="k">anomalies</em>). When they pile up, the field enters <em class="k">crisis</em>.</p><p>A <em class="k">scientific revolution</em> is a <b>non-cumulative</b> episode where an older paradigm is replaced, fully or partly, by an <b>incompatible</b> new one.</p>`},
+    {h:"Why call it a “revolution”?", body:`<ul><li><b>How they begin:</b> a group (often a small subfield) senses that the paradigm no longer works in an area the paradigm itself led them to. A sense of malfunction leading to crisis is the precondition, in politics and in science.</li><li>A revolution only looks revolutionary to those whose paradigm it affects. X-rays were just extra knowledge for astronomers, but they broke a paradigm for Kelvin, Crookes and Roentgen.</li><li><b>How they are decided:</b> camps form. Each side judges using its own paradigm, and no higher framework exists. The debate becomes <b>circular</b>, so persuasion replaces proof.</li></ul><div class="aha"><b>Quote to use</b>There is no standard higher than the assent of the relevant community.</div>`},
+    {h:"Why revolutions are necessary", body:`<ul><li>In logic, science <i>could</i> be cumulative (life found somewhere unknown in the galaxy wouldn't clash with anything).</li><li>Historically, cumulative discovery of real novelty is an “almost non-existent exception”.</li><li><b>Discoveries</b> only appear where expectations and instruments turn out wrong, so the paradigm that exposes an anomaly must clash with the one that later explains it.</li><li><b>Theories</b> arise to resolve anomalies, so a successful new theory must predict something different. It has to displace the old one. Even energy conservation came out of a crisis (Newtonian dynamics vs. caloric theory of heat).</li></ul>`},
+    {h:"Is Newton just a special case of Einstein?", body:`<p>The positivist objection says engineers still use Newton, and Einstein's equations reduce to Newton's at low speeds, so Newton was never wrong. Kuhn gives two replies:</p><ul><li><b>It makes every theory immune and kills research.</b> Restrict phlogiston to the facts it explained and it can never be refuted. But a theory limited to what is already observed gives no puzzles, no anomalies and no crises. The price of progress is a commitment that risks being wrong.</li><li><b>The derivation is spurious.</b> The terms keep their Einsteinian meaning: Newtonian mass is conserved, Einsteinian mass converts to energy. Newton → Einstein is the prototype of revolution: a shift in the conceptual network, not in the list of objects.</li></ul>`},
+    {h:"Paradigms change substance AND standards", body:`<p>Paradigms give a <b>map</b> of nature (substantive: is light material? is heat conserved?) and the <b>rules for map-making</b> (normative: which problems count, what counts as a solution). So rival traditions are often <em class="k">incommensurable</em>: no common measure.</p><ul><li><b>Newton & gravity:</b> innate attraction sounded as “occult” as the scholastics' “dormitive power”. Scientists couldn't work without the Principia, so gravity became accepted as innate. That was a reversion, not a regression, and it enabled work on electricity and chemical affinity.</li><li><b>Lavoisier:</b> dropped phlogiston-style “principles”, so explaining the qualities of substances stopped counting against a theory.</li><li><b>Maxwell:</b> no mechanical ether. At first rejected; then designing an ether stopped being a problem at all.</li></ul>`},
+    {h:"Standards don't steadily improve", body:`<p>Changes in standards get <b>reversed</b>. Einstein explained gravity again. Quantum mechanics lets chemists explain colour and state again. So paradigm debates are about <b>values</b>: which problems matter more to have solved? That question lies outside normal science, which is the clearest sign the debates are revolutionary.</p>`}
+  ],
+  remember:[
+    "A revolution replaces an old paradigm with an incompatible new one. Science is not simply cumulative.",
+    "Like political revolutions, they start with malfunction and crisis and end in a choice with no higher standard than community assent.",
+    "They are necessary: real novelties only emerge where expectations fail, and new theories must predict differently.",
+    "“Newton is a special case of Einstein” fails: concepts change meaning, and limiting theories to past evidence would end research.",
+    "Paradigms shape both content and standards, so rivals talk past each other. Standards change and even reverse."
+  ],
+  terms:[
+    ["Paradigm","A shared achievement giving a scientific community its theory, methods and standards."],
+    ["Normal science","Puzzle-solving research within an accepted paradigm. Cumulative."],
+    ["Anomaly","A result that stubbornly refuses to fit the paradigm."],
+    ["Crisis","Loss of confidence in a paradigm as anomalies resist solution."],
+    ["Scientific revolution","A non-cumulative episode where an old paradigm is replaced, fully or partly, by an incompatible new one."],
+    ["Cumulative view","Science grows by adding new knowledge without contradicting old (Kuhn: rare and improbable)."],
+    ["Circular argument","Each side defends its paradigm with that paradigm's own criteria. It can persuade but not compel."],
+    ["Logical positivism","In Kuhn's reading: limits theories so much that later theories can never conflict with them."],
+    ["Special / limiting case","Claim that Newton follows from Einstein under limited conditions. Kuhn: spurious."],
+    ["Substantive differences","Paradigms disagree about what exists in nature and how it behaves."],
+    ["Normative differences","Paradigms disagree about legitimate problems, methods and standards of solution."],
+    ["Incommensurability","Successive traditions lack a common measure, so they can't be fully compared point by point."],
+    ["Mechanico-corpuscular view","17th-century view: explain everything by size, shape, position and motion of particles."]
+  ],
+  quiz:[
+    {q:"How does Kuhn define a scientific revolution?", o:["A sudden burst of new data that is added to existing theory","A non-cumulative episode where an old paradigm is replaced by an incompatible new one","A period when scientists abandon science for politics","The moment a theory is proven true by experiment"], a:1, why:"Non-cumulative and incompatible are the two key words. The old paradigm is replaced, fully or partly."},
+    {q:"What precondition do political and scientific revolutions share?", o:["A charismatic leader","Funding from outside the community","A growing sense that existing institutions or paradigms malfunction, leading to crisis","A majority vote"], a:2, why:"Kuhn's “genetic” parallel: a sense of malfunction, often felt only by a small group, is the precondition for both."},
+    {q:"Why were X-rays revolutionary for Roentgen and Kelvin but not for astronomers?", o:["Astronomers didn't believe in X-rays","A revolution only looks revolutionary to those whose paradigm it affects","X-rays were discovered by astronomers first","Astronomy had no paradigm"], a:1, why:"X-rays broke the radiation and cathode-ray paradigm. For astronomers they were just extra knowledge."},
+    {q:"Why are debates between paradigms “circular”?", o:["Scientists repeat the same experiments","Each side argues for its paradigm using that paradigm's own standards","The same people always win","Paradigms are cyclical in history"], a:1, why:"The normal tools for judging theories depend on a paradigm, and the paradigm is what's in question. The argument can persuade but can't compel someone outside the circle."},
+    {q:"Kuhn's first reply to “Newton is a special case of Einstein” is that this move…", o:["…is mathematically impossible","…would make every theory immune and end research","…was invented by Einstein","…proves Newton was right all along"], a:1, why:"Limit a theory to what's already observed (like phlogiston) and it can't be refuted. But then it offers no puzzles, anomalies or crises, and research stops."},
+    {q:"Why is the derivation of Newton from Einstein “spurious”?", o:["The equations don't match at low speeds","The terms keep their Einsteinian meaning: e.g. Einsteinian mass can turn into energy","Einstein's math contains errors","Newton used different units"], a:1, why:"The equations look like Newton's, but space, time and mass carry new meanings. It's a change of the conceptual network."},
+    {q:"What does incommensurability mean?", o:["Paradigms cannot be measured with instruments","Successive traditions lack a common measure because problems and standards also change","New paradigms are always bigger","Scientists refuse to communicate"], a:1, why:"Paradigms differ in content AND in which problems and solutions count, so there's no neutral yardstick."},
+    {q:"Gravity as an innate attraction was eventually accepted. Kuhn calls this…", o:["A regression to scholastic thinking","A reversion (not a regression) to a scholastic standard","Proof that standards always improve","A mistake later corrected by Descartes"], a:1, why:"It went back to a scholastic-style standard, but Kuhn refuses to call it better or worse. It's what the new paradigm required."},
+    {q:"Which example shows that changes in standards get REVERSED?", o:["Lavoisier discovering oxygen","Quantum mechanics letting chemists explain colour and state again","Franklin's Leyden jar","The discovery of X-rays"], a:1, why:"The chemical revolution banned explaining qualities of substances. Quantum mechanics brought that aim back. Einstein explaining gravity is another reversal."},
+    {q:"Where did energy conservation come from, historically?", o:["A harmless higher-level theory that simply unified old ones","A crisis: Newtonian dynamics clashed with the caloric theory of heat","Maxwell's ether","Chemical affinity research"], a:1, why:"It looks cumulative today, but only after caloric theory was rejected could energy conservation enter science."}
+  ],
+  games:[
+    {type:"order", id:"cycle", title:"Build the revolution cycle", intro:"Tap the stages in the order Kuhn describes them.",
+     items:["Paradigm is accepted","Normal science: puzzle-solving","Anomalies appear","Anomalies resist: crisis","Camps form; persuasion, not proof","New, incompatible paradigm takes over"]},
+    {type:"sort", id:"subnorm", title:"Map or map-making rules?", intro:"Is each disagreement between paradigms substantive (about nature) or normative (about standards)?",
+     bins:[["Substantive","what nature contains"],["Normative","which problems & solutions count"]],
+     items:[["Do subatomic particles exist?",0],["Must a theory of light describe a mechanical ether?",1],["Is light material?",0],["Should chemistry explain why substances are acidic or metallic?",1],["Is heat conserved?",0],["Is action-at-a-distance a proper explanation, or “occult”?",1],["Can mass be converted into energy?",0],["Is this problem “unscientific” and better handed to another field?",1]]}
+  ]
+},
+{
+  id:"ward", acc:"--ward", step:"Stop 2 · the mind",
+  title:"Structured Imagination", who:"Ward (1994), Cognitive Psychology",
+  tag:"Ask people to invent an alien and they draw a slightly weird earth animal. What we know shapes what we can imagine.",
+  oneLiner:"When people try to invent something new, their imagination is structured by what they already know about the category. Most “aliens” end up looking a lot like ordinary earth animals.",
+  read:[
+    {h:"The question", body:`<p>Category research usually asks how we <i>classify</i> things (“is this a bird?”). Ward asks how we use category knowledge to <b>create new members</b>, the way inventors design products or authors invent characters.</p><p><b>Imagination</b> = the deliberate mental generation of something novel. A hallucination isn't deliberate; picturing an absent relative isn't novel.</p><div class="aha"><b>The core test</b>Ask many people to imagine an animal from another planet. If imagination were free-floating, their creatures would share little. If it's structured, they'll share predictable features.</div>`},
+    {h:"The framework", body:`<p>The same stored knowledge (prototypes, features, exemplars) used to <b>recognise</b> category members is used to <b>create</b> new ones. Predictions: eyes and legs; <b>bilateral symmetry</b>; same species share shape and parts but may differ in size; different species differ in shape and parts (different <em class="k">basic-level</em> categories); <em class="k">correlated attributes</em> come together (feathers + wings + beak).</p>`},
+    {h:"Experiments 1–2: earth animals in space", body:`<ul><li><b>Exp 1 (37 students):</b> nearly all creatures had symmetry, senses and appendages. Eyes (33/37) beat ears (19) and noses (22); legs (29) beat arms (11) and wings (4). 65% had at least one major difference, but only <b>11% had more than two</b>.</li><li>Within a species people varied <b>size and gender</b>. Across species they varied <b>shape, parts and senses</b>, just like goose vs. gander vs. woman.</li><li><b>Exp 2 (180 students):</b> “it has feathers” → wings, beaks and two legs (67% vs. 38%). Scales → fins and gills, fewer legs. Surprise: feathered and scaled creatures had <b>fewer ears</b>, a correlation nobody lists.</li><li>People who copied a specific earth animal made fewer unusual appendages (16% vs. 29%) and senses (26% vs. 41%): <em class="k">fixation</em>.</li></ul>`},
+    {h:"Experiment 3: impossible planets", body:`<p>80 students; a <b>molten</b> planet (lava seas, food on scattered islands) or a <b>windy</b> planet (violent winds from two feet up); creature has feathers or fur.</p><ul><li>Environment beat covering: furry creatures on the molten planet flew more (<b>70%</b>) than feathered ones on the windy planet (<b>35%</b>).</li><li>Windy adaptations: gripping feet and suction cups, 4+ legs (60%), staying low, being heavy. Molten: heat-resistant feet, infrared vision.</li><li><b>Molten + feathers</b> had it easy: a bird already fits, so they copied birds and innovated less. <b>Molten + fur</b> had no ready example and built flying creatures from general knowledge (wings, no beaks).</li></ul>`},
+    {h:"Experiments 4–5: “be wild!” and the professionals", body:`<ul><li><b>Exp 4 (94 students):</b> told to use their wildest imagination, people still kept symmetry, appendages and senses. <i>Every</i> creature had senses. Only the details changed (more unusual senses in “Wild” than “Believable”). They drew on earth animals far more than sci-fi (48% vs. 20%).</li><li><b>Exp 5:</b> 50 sci-fi aliens from Barlowe's <i>Guide to Extraterrestrials</i>: 80% symmetric, 74% appendages, 74% senses. Professional imaginers are constrained too.</li></ul>`},
+    {h:"The model: path of least resistance", body:`<ul><li>Pick a relevant knowledge domain (earth animals), then build from it.</li><li>The <em class="k">path of least resistance</em>: retrieve one typical example and copy it. The result is conventional.</li><li>When constraints <b>clash</b> with the example, people must modify it or synthesise from broad knowledge. That leads to more innovation. Difficulty boosts creativity.</li><li>Copying a whole example drags along irrelevant features (train carriages kept running boards from horse carriages; 80-column screens descend from punch cards).</li></ul><div class="aha"><b>Ward's advice</b>Describe a problem as abstract principles that must be met (“it needs a way to gather information”), not as past solutions (“a dog has two eyes”).</div>`}
+  ],
+  remember:[
+    "Imagination is not random: it follows the same category knowledge as ordinary thinking.",
+    "Imagined aliens nearly always have symmetry, appendages and senses, even when people try to be wild and even in science fiction.",
+    "Cues pull up typical earth animals, and their correlated features come along (feathers → wings, beak).",
+    "Copying a specific example is the easy path, and it limits innovation (fixation).",
+    "Constraints that clash with familiar examples force people to use broad knowledge, which gives more original, useful ideas. Start from principles, not past solutions."
+  ],
+  terms:[
+    ["Imagination (Ward)","The deliberate mental generation of something novel."],
+    ["Exemplar generation","Ward's method: ask people to create a new member of a known category for an imaginary setting."],
+    ["Structured imagination","New creations keep predictable properties of the category most related to the goal."],
+    ["Basic level","The middle, most natural category level (bird, fish, dog)."],
+    ["Correlated attributes","Features that tend to occur together (feathers + wings + beak)."],
+    ["Naive theories","Everyday beliefs about how the world works, e.g. animals adapt to environments."],
+    ["Central attribute","A feature kept across tasks (appendages, senses). Its exact form may vary."],
+    ["Context-independent vs. dependent","Always activated by a concept vs. only in some contexts (Barsalou)."],
+    ["Fixation","Getting stuck on an example's properties, which limits innovation."],
+    ["Path of least resistance","The easy strategy of retrieving and copying a typical example."],
+    ["Configuration vs. concept space","Jansson: concrete design examples vs. abstract principles."]
+  ],
+  quiz:[
+    {q:"Which of these counts as “imagination” in Ward's definition?", o:["A hallucination","Picturing an absent relative","Deliberately using a known thing as a starting point for something new","Remembering yesterday's lunch"], a:2, why:"Imagination = deliberate + novel. Hallucinations aren't deliberate; picturing a relative isn't novel."},
+    {q:"In Experiment 1, what did almost every imagined alien have?", o:["Wings, fur and a tail","Bilateral symmetry, senses and appendages","More than two major differences from earth animals","Five eyes"], a:1, why:"These are the central attributes. Only 11% had more than two major differences."},
+    {q:"When drawing a second member of the SAME species, what did people mostly change?", o:["Shape and body plan","Senses","Size and gender","Number of legs"], a:2, why:"Like a goose vs. a gander. Shape, parts and senses changed across species instead."},
+    {q:"In Experiment 2, being told “it has feathers” led to…", o:["More fins and gills","More wings, beaks and two legs","No change compared with control","More ears"], a:1, why:"Correlated attributes: 67% two-legged vs. 38% for fur and control. And feathered creatures had fewer ears."},
+    {q:"On the molten planet, furry creatures flew 70% of the time. What does this show?", o:["Fur causes flight","The environment mattered more than the covering: people used broad knowledge about adaptation","Students copied bats","Ward's data were unreliable"], a:1, why:"Feathered creatures on the windy planet flew only 35%. People reasoned from naive theories about environments, not only from examples."},
+    {q:"What happened when students were told to use their WILDEST imagination (Exp 4)?", o:["They abandoned symmetry and senses","The core structure stayed; only details changed","They copied science fiction","They refused the task"], a:1, why:"Wild creatures had more unusual senses than Believable ones, but symmetry, appendages and senses were equally common."},
+    {q:"Professional sci-fi aliens (Exp 5) were…", o:["Completely unlike earth animals","Still mostly symmetric (80%) with appendages and senses (74%)","All humanoid","Not analysed statistically at all, so no conclusions"], a:1, why:"Somewhat lower than students, but the great majority kept the core properties."},
+    {q:"What is the “path of least resistance”?", o:["Designing from abstract principles","Retrieving one typical example and copying it","Asking a team for ideas","Choosing the most unusual features"], a:1, why:"It's the default when there are no clashing constraints, and it produces conventional results."},
+    {q:"People who based creatures on specific earth animals…", o:["Made more unusual appendages","Made fewer unusual appendages and senses (fixation)","Always drew birds","Considered the environment more"], a:1, why:"16% vs. 29% unusual appendages in Exp 2. A specific example in mind limits innovation."},
+    {q:"Which real-world design shows copying a whole example drags along irrelevant features?", o:["Z Corp's office 3D printer","Early train carriages keeping running boards from horse-drawn carriages","Maxwell's electromagnetic theory","The Leyden jar"], a:1, why:"Running boards endangered conductors. The 80-column screen from punch cards is the other example."}
+  ],
+  games:[
+    {type:"alien", id:"alien", title:"Alien Lab", intro:"Invent a creature from another planet. Then see how structured your imagination was, measured against Ward's participants."},
+    {type:"order", id:"model", title:"Ward's model of imagining", intro:"Put the steps of Ward's tentative model in order.",
+     items:["Pick a relevant knowledge domain (e.g. earth animals)","Retrieve a typical example: the path of least resistance","Check it against the task's constraints","If constraints clash, modify it or synthesise from broad knowledge","A more novel, and more useful, creation"]}
+  ]
+},
+{
+  id:"shane", acc:"--shane", step:"Stop 3 · the entrepreneur",
+  title:"Prior Knowledge & Opportunities", who:"Shane (2000), Organization Science",
+  tag:"One MIT invention, eight founders, eight completely different business ideas. What you already know decides what you see.",
+  oneLiner:"A new technology doesn't come with one obvious business idea. Different people see different opportunities in the same invention, depending on the knowledge they already have.",
+  read:[
+    {h:"The problem", body:`<p>When a technology is invented, someone still has to spot what to do with it: which market, what to sell, whose problem it solves. Shane calls this <em class="k">opportunity discovery</em>. Most research skips it and quietly assumes discovery is easy and the same for everyone.</p>`},
+    {h:"Three schools", body:`<ul><li><b>Neoclassical equilibrium:</b> all opportunities are known. Entrepreneurs are people with a taste for uncertainty who choose among known options.</li><li><b>Psychological:</b> stable traits (need for achievement, risk-taking, locus of control…) and better search.</li><li><b>Austrian</b> (Hayek, Kirzner): information is spread unevenly, so each person sees only some opportunities, often <b>without searching</b>. Shane's view.</li></ul><div class="aha"><b>Why it matters</b>If nobody sees all options, entrepreneurs don't really “select between” them. There's no universal entrepreneur type (decades of trait research found no robust differences). And spreading a technology across many entrepreneurs finds more uses than one firm would.</div>`},
+    {h:"What Shane tested", body:`<ul><li><b>P1:</b> not everyone is equally likely to recognise a given opportunity.</li><li><b>P2:</b> people discover opportunities without actively searching.</li><li><b>P3a–c:</b> prior knowledge of <b>markets</b>, of <b>ways to serve markets</b>, and of <b>customer problems</b> shapes which market, how, and which product.</li></ul><p>Opportunities exist only because of <em class="k">information asymmetry</em>. Each person's mix of experience creates a <em class="k">knowledge corridor</em> (Venkataraman).</p>`},
+    {h:"The design: one invention, eight teams", body:`<p><b>3DP</b> (three-dimensional printing) was invented at MIT in 1989 by a team led by Ely Sachs: spread powder, spray binder, repeat. Shane ran an embedded multiple-case study: 30 hours of interviews with 22 people, cross-checked with MIT's Technology Licensing Office files, press, VC records and patents. Eight teams looked at 3DP: four licensed it and founded companies; four gave up. Because all eight saw the same invention, differences trace back to the people.</p><div class="aha"><b>Fun detail</b>None of the four inventors started a company.</div>`},
+    {h:"Results", body:`<ul><li><b>P1:</b> 3DP was in Fortune, the FT and The Economist, yet only eight opportunities were found. <b>No team saw more than one</b>, and none weighed alternatives. Z Corp's founder said printing pills would never have occurred to her.</li><li><b>P2:</b> nobody was searching. “It just clicked.” The Therics founder: a drug-delivery expert sees drug delivery, a tissue engineer sees tissue scaffolds.</li><li><b>P3a market:</b> Z Corp knew both industrial design and architecture (~$100M market). 3D Partners only knew architecture (~$10M, too small). Narrow knowledge → narrow opportunity.</li><li><b>P3b how:</b> teams who could design machines sold machines; 3D Partners couldn't, so they only saw a service bureau.</li><li><b>P3c problem:</b> each team solved a problem it had already met (Therics: blood pressure varies over the day, drugs weren't timed to it).</li></ul>`},
+    {h:"Limits & lessons", body:`<ul><li><b>Limitations:</b> only indirect evidence others couldn't find the opportunities; highly educated MIT-linked sample; retrospective self-reports; only entrepreneurs studied.</li><li><b>For founders:</b> look for opportunities in what you know, not what's “hot”. Compare your idea to your own alternatives, not to ideas you'd never find anyway. Secure rights early (Therics held all medical rights, which blocked 3D Imaging).</li><li><b>For policy:</b> worldwide exclusive licences block others who might find better uses. No central planner can spot every use (Hayek). Low entrepreneurship may reflect missing knowledge, not just missing money.</li></ul>`}
+  ],
+  remember:[
+    "The same technology can produce many very different opportunities.",
+    "No one sees them all. Each entrepreneur found exactly one.",
+    "Opportunities are recognised, not searched for.",
+    "Prior knowledge of markets, ways to serve them, and customer problems decides what you see and how you exploit it.",
+    "So: build on what you know, secure your rights, and don't expect any single actor to spot every use of a technology."
+  ],
+  terms:[
+    ["Entrepreneurial opportunity","A chance to introduce new goods, services, raw materials or organising methods that sell above their cost."],
+    ["Opportunity discovery","The moment someone realises new information can be turned into profit."],
+    ["Prior knowledge","What a person already knows from work, education or life before meeting new information."],
+    ["Information asymmetry","Different people hold different information. The precondition for opportunities to exist."],
+    ["Knowledge corridor","The range of opportunities a person's unique knowledge lets them see."],
+    ["Austrian economics","School (Hayek, Kirzner) stressing dispersed knowledge, disequilibrium and discovery."],
+    ["Equilibrium theory","Neoclassical view that markets are coordinated and all opportunities are known."],
+    ["Search vs. discovery","Kirzner: search looks for known missing info; discovery is the surprise of noticing something overlooked."],
+    ["3DP","MIT's three-dimensional printing process (1989, Ely Sachs): powder + sprayed binder, layer by layer."]
+  ],
+  quiz:[
+    {q:"Which school says each person can see only SOME opportunities?", o:["Neoclassical equilibrium","Psychological trait theory","Austrian economics","Logical positivism"], a:2, why:"Information is dispersed (Hayek, Kirzner), so opportunities depend on what you happen to know."},
+    {q:"How many teams seriously investigated 3DP, and how many founded companies?", o:["Eight investigated, four founded companies","Four investigated, all founded companies","Twenty-two, eight founded companies","One, the inventors' own spin-off"], a:0, why:"Four licensed it and founded companies; four gave up. None of the four inventors started a company."},
+    {q:"What does Proposition 2 claim?", o:["Entrepreneurs are better searchers","People discover opportunities without actively searching for them","Only rich people become entrepreneurs","Opportunities are obvious once published"], a:1, why:"“It just clicked.” Discovery is recognition, not search."},
+    {q:"Z Corp saw a ~$100M market; 3D Partners saw ~$10M. Why?", o:["Z Corp had more money","Z Corp's founders knew both industrial design and architecture; 3D Partners only knew architecture","3D Partners came later","Z Corp did systematic market research"], a:1, why:"Narrow knowledge → narrow opportunity. Nobody did systematic market research."},
+    {q:"Why do entrepreneurial opportunities exist at all, per Shane?", o:["Government subsidies","Information asymmetry","Perfect competition","Risk-loving personalities"], a:1, why:"If everyone saw the same opportunity, resource owners would raise prices and competition would erase the profit."},
+    {q:"What did decades of trait research find about entrepreneurs vs. others?", o:["Entrepreneurs have much higher need for achievement","No robust, consistent personality differences","Entrepreneurs are more risk-averse","Entrepreneurs are more intelligent"], a:1, why:"This fits the Austrian view: differences come from idiosyncratic knowledge, not special traits."},
+    {q:"Which is a practical implication for public policy?", o:["Grant worldwide exclusive licences to one firm","Let a central office decide every use of a technology","Worldwide exclusive licences have a hidden cost: they block others who might find better uses","Fund only trait-based entrepreneurship training"], a:2, why:"No central actor can spot every use. Decentralised discovery works better (Hayek)."},
+    {q:"Which is a limitation Shane acknowledges?", o:["The sample was too large","Data were self-reported and retrospective","The technology was too simple","He studied only failed ventures"], a:1, why:"Also: an MIT-educated sample, only indirect evidence that others couldn't find the ideas, and only entrepreneurs studied."},
+    {q:"Why did 3D Partners only see a service bureau, not a machine?", o:["They lacked the deep machine-design expertise","MIT forbade machines","Service bureaus were more profitable","Their investors insisted"], a:0, why:"P3b: knowledge of ways to serve the market decides the business model."},
+    {q:"Shane's advice to aspiring entrepreneurs is to…", o:["Follow what's hot right now","Look for opportunities in what you already know","Search systematically across all applications","Wait for investors to suggest ideas"], a:1, why:"The knowledge needed is built long before a sector becomes popular."}
+  ],
+  games:[
+    {type:"match", id:"eight", title:"Eight lenses, one printer", intro:"Match each founder background to the opportunity they saw in 3DP. Tap a background, then its opportunity.",
+     pairs:[
+       ["MIT mechanical engineers who renovated buildings","Z Corp: cheap office machine for 3D concept models"],
+       ["25 years in pharma and FDA approval","Therics: pills that time drug release"],
+       ["Supplied filters to power plants; PhD in ceramics","Specific Surface: ceramic filters for hot flue gas"],
+       ["VP engineering at a rapid-prototyping firm for Ford/GM","Soligen: ceramic casting molds straight from CAD"],
+       ["An architect plus mechanical engineering students","3D Partners: architectural model service bureau"],
+       ["Prosthodontist and surgeon","3D Orthopedics: custom artificial bone"],
+       ["Health-care consulting; PhD on multi-material CAD","3D Imaging: multicolour surgical models"],
+       ["Lawyer, art dealer and sculpture collector","Mall stores turning photos into busts"]
+     ]},
+    {type:"sort", id:"schools", title:"Equilibrium or Austrian?", intro:"Which view of entrepreneurship does each statement belong to?",
+     bins:[["Neoclassical","markets in equilibrium"],["Austrian","dispersed knowledge"]],
+     items:[["All opportunities are already known",0],["Information is spread unevenly across society",1],["Entrepreneurs are people with a taste for uncertainty",0],["People discover opportunities without searching",1],["One firm should exploit a technology across all markets",0],["Spread a technology across many entrepreneurs",1],["Entrepreneurs choose (maximise) among known options",0],["You can't search for what you don't know you're missing",1]]}
+  ]
+},
+{
+  id:"ch5", acc:"--ch5", step:"Stop 4 · the synthesis",
+  title:"How Does Knowledge Shape Ideas?", who:"Chapter 5: Galenson, Ward, Shane, Jones",
+  tag:"Old masters vs. young geniuses, climbing the giant, and how the four readings fit together.",
+  oneLiner:"Knowledge is the raw material of new ideas, but it cuts both ways. It can be a precondition or an obstacle, depending on the kind of idea, how knowledge narrows our thinking, and how much a field has piled up.",
+  read:[
+    {h:"The big picture", body:`<p>Technology drives innovation; technology comes from ideas; ideas come from knowledge. Four readings give four answers:</p><ul><li><b>Galenson:</b> knowledge is a prerequisite <i>or</i> an impediment, depending on the type of creativity.</li><li><b>Ward:</b> what we know structures and limits what we can imagine.</li><li><b>Shane:</b> specific prior knowledge lets people spot opportunities, but only in a narrow corridor.</li><li><b>Jones:</b> as a field's knowledge accumulates, great discoveries come later in life.</li></ul>`},
+    {h:"5.1 Galenson: old masters & young geniuses", body:`<p><b>Warning first:</b> studying geniuses romanticises them, ignores that creators depend on others (curators, collaborators), and forgets that what counts as creative changes over time.</p><p><b>Method:</b> count which paintings are <i>reproduced as illustrations</i> in many art history textbooks, and note the artist's age when making them.</p><ul><li><b>Picasso</b> made his major innovations at about <b>26</b>. <b>Cézanne</b> is recognised mainly for work in his <b>sixties</b>. Very few peak mid-career.</li><li><b>Old masters</b> = <em class="k">experimental</em>: lifetime of knowledge, trial and error, vague goals, same subject many times, many small cumulative advances.</li><li><b>Young geniuses</b> = <em class="k">conceptual</em>: limited knowledge, a vision that breaks sharply, plans first, precise goals, don't repeat themselves.</li></ul><div class="aha"><b>Key insight</b>Knowledge plays opposite roles. Experimental innovation needs it; conceptual innovation needs freedom from it. But at the cutting edge of technology, “better off not knowing what you're doing” is preposterous.</div>`},
+    {h:"5.2 Ward, seen from the chapter", body:`<ul><li>Explains why dropout founders claim not knowing the industry helped: known categories structure imagination.</li><li><b>Critique:</b> lab tasks have low <em class="k">ecological validity</em>. With little reason to try hard, people take the easy route. The hypothesis still holds value.</li><li><b>Links:</b> dominant designs may cognitively close the range of ideas; managers miss disruptive low-end markets; specialists are blind to new architectural configurations.</li><li><b>Open questions:</b> no related knowledge (fresh view, or nothing to work with?); broad knowledge (high variance: many duds, a few big hits); deep knowledge (a threshold before leaps go forward?); teams (worse, or compensating?).</li></ul>`},
+    {h:"5.3 Shane, seen from the chapter", body:`<ul><li>All innovation depends on <em class="k">opportunity recognition</em>, especially for general-purpose technologies whose “killer app” the inventor didn't imagine.</li><li>Prior knowledge of usage contexts gives entrepreneurs tunnel vision: one opportunity seen, others missed.</li><li>Peter Thiel's “build what nobody else is building” makes sense in an Austrian world: you may really be the only one with that knowledge mix.</li><li><b>In organisations</b> the corridor is more one-sidedly constraining: others must see the same value, and by definition they lack the knowledge. Many ideas stay underdeveloped (picked up in Chapter 6).</li></ul>`},
+    {h:"5.4 Jones: is great invention getting harder?", body:`<p><b>Data:</b> Nobel Prize winners (physics, chemistry, medicine, economics) and technological almanacs, with the age at the discovery.</p><ul><li><b>Finding 1:</b> the mean age of great achievement rose by about <b>six years</b> over the 20th century.</li><li><b>Finding 2:</b> except physics, where it <b>fell</b> in the early 1900s and rose again from the 1930s, coinciding with the <b>quantum revolution</b> (~1900–1927).</li><li><b>Climbing the giant:</b> to stand on the shoulders of giants you first have to climb up the giant's back. More knowledge → longer education → fewer innovative years left. This is the <em class="k">burden of knowledge</em>.</li><li>Paradigm shifts make old knowledge obsolete and move the frontier closer, letting young geniuses back in. Then the mountain builds up again (Kuhn!).</li><li>Answer: specialise, then collaborate. Great invention becomes more of an organisational issue.</li></ul><div class="aha"><b>Trivia</b>The economics “Nobel” was created in 1968 by Sweden's central bank, not by Nobel.</div>`}
+  ],
+  remember:[
+    "Knowledge is both a precondition and an obstacle for new ideas, depending on the type of innovation (Galenson).",
+    "What we know structures what we imagine: most ideas remix familiar categories (Ward), though lab results need caution.",
+    "Idiosyncratic prior knowledge lets people spot opportunities others can't, but only in a narrow corridor, and others in an organisation may not see the value (Shane).",
+    "As a field's knowledge grows, great work happens later in life. Paradigm shifts can let young geniuses back in (Jones).",
+    "Growing knowledge pushes toward specialisation and collaboration, making innovation increasingly an organisational issue."
+  ],
+  terms:[
+    ["Conceptual innovation","A sharp break from existing ideas, based on an idiosyncratic vision. Typical of young geniuses."],
+    ["Experimental innovation","Novelty from many small trial-and-error advances. Typical of old masters."],
+    ["Structured imagination","New ideas keep the central features of known categories (Ward)."],
+    ["Ecological validity","How well lab behaviour reflects behaviour in real life."],
+    ["Recombinant innovation","The view that all new ideas are new combinations of existing ones (Schumpeter; Hargadon & Sutton)."],
+    ["Opportunity recognition","Seeing that a new solution could create value."],
+    ["Knowledge corridor","The narrow range of opportunities one's prior knowledge lets one see."],
+    ["Knowledge frontier","The edge of current understanding, where discoveries are made."],
+    ["Burden of knowledge","The growing time needed to reach the frontier as knowledge accumulates (Jones)."],
+    ["Normal science / paradigm change","Periods of cumulative knowledge vs. radical overturns (Kuhn)."]
+  ],
+  quiz:[
+    {q:"How does Galenson measure which artworks are most important?", o:["Auction prices","How often works are reproduced as illustrations across art history textbooks","Critics' reviews at the time","Museum visitor counts"], a:1, why:"Illustrated, not just mentioned. Using many textbooks cancels out any one author's favourites."},
+    {q:"Cézanne is recognised mainly for work in his sixties. He is a classic…", o:["Young genius, conceptual","Old master, experimental","Middle-career peaker","Outsider artist"], a:1, why:"Experimental innovators work by trial and error over a lifetime of knowledge. Picasso (~26) is the conceptual contrast."},
+    {q:"Which trait belongs to CONCEPTUAL innovators?", o:["Vague goals; rarely feel finished","Paint the same subject many times","Work from plans; most thinking happens before execution","Many small cumulative advances"], a:2, why:"Conceptual innovators have precise goals and move on once reached. Picasso tried many styles."},
+    {q:"What is the chapter's main methodological critique of Ward?", o:["Too few participants","Low ecological validity: short lab tasks may not reflect real life","He studied only artists","He didn't use statistics at all"], a:1, why:"In real life people have more time, inspiration and incentives. But the hypothesis still has value."},
+    {q:"According to Jones, the mean age of great achievement over the 20th century…", o:["Fell by ten years","Stayed the same","Rose by about six years","Rose only in physics"], a:2, why:"It rose in every Nobel field, with physics as the telling exception early in the century."},
+    {q:"Why did the age of great achievement FALL in early 20th-century physics?", o:["More funding for young researchers","The quantum revolution made old knowledge obsolete and moved the frontier closer","Physics education got shorter by law","World War I"], a:1, why:"A paradigm shift (Kuhn) resets the climb, letting young geniuses back in."},
+    {q:"What does “climbing the giant” refer to?", o:["Competing with famous scientists","Having to learn ever more before reaching the knowledge frontier","Collaborating in large teams","Getting a Nobel Prize"], a:1, why:"To stand on the shoulders of giants, you first climb up their back. That's the burden of knowledge."},
+    {q:"Why is Shane's knowledge corridor MORE constraining inside organisations?", o:["Organisations forbid innovation","Others must see the same value, and they lack the originator's knowledge","Managers are less intelligent","Organisations don't license technologies"], a:1, why:"Innovation may be likely, but shared recognition of it unlikely, so many ideas stay underdeveloped."},
+    {q:"If specialists reach the frontier faster, what's the catch?", o:["Nothing, it's pure gain","Conceptual leaps may need broad knowledge, so specialists must collaborate","Specialists are always old masters","It makes paradigm shifts impossible"], a:1, why:"The Renaissance man may die out, making great invention more of an organisational issue."},
+    {q:"Which is NOT one of the chapter's problems with studying “geniuses”?", o:["It can romanticise genius","Creative people depend on others, e.g. curators","What counts as creative changes over time","Geniuses refuse to be interviewed"], a:3, why:"The three problems: says little about ordinary people, ignores dependence on others, and standards of creativity change."}
+  ],
+  games:[
+    {type:"sort", id:"lifecycle", title:"Old master or young genius?", intro:"Sort each trait into Galenson's two creative life cycles.",
+     bins:[["Old master","experimental"],["Young genius","conceptual"]],
+     items:[["Paints the same subject many times",0],["Works from a detailed plan before starting",1],["Vague goals; rarely feels finished",0],["Picasso at about 26",1],["Cézanne in his sixties",0],["Tries many different styles",1],["Many small, cumulative advances",0],["A vision that breaks sharply with established ideas",1],["Needs a lifetime of knowledge and practice",0],["Precise goal; moves on once it's reached",1]]},
+    {type:"match", id:"readings", title:"Who said it?", intro:"Match each reading to its answer to “how does knowledge shape ideas?”",
+     pairs:[["Galenson","Prerequisite or impediment, depending on the type of creativity"],["Ward","Known categories structure and limit what we imagine"],["Shane","Enables, but only in a narrow corridor"],["Jones","A growing stock makes great work come later"],["Kuhn","Paradigms set both the content and the standards"]]},
+    {type:"order", id:"jones", title:"The knowledge cycle", intro:"Order Jones's cycle linking a field's knowledge base to who innovates.",
+     items:["Knowledge accumulates in a field (normal science)","Education takes longer to reach the frontier","Great work happens later in life; old masters are favoured","A paradigm shift makes old knowledge obsolete","The frontier moves closer; young geniuses get back in","A new mountain of knowledge starts building up"]}
+  ]
+}
+];
+
+const DISCUSSION = [
+  {q:"How does Jones use Kuhn?", a:[
+    "Jones's knowledge base moves like Kuhn's science: long stretches of accumulation (normal science) broken by overturns (paradigm change).",
+    "During accumulation the burden of knowledge grows and the age of great work rises. A revolution makes old knowledge obsolete, so physics saw younger Nobel winners during the quantum revolution.",
+    "So Kuhn explains <i>when</i> the frontier resets, and Jones shows <i>who</i> benefits: young, conceptual innovators."]},
+  {q:"Is Ward's structured imagination Kuhn's paradigm at the level of one mind?", a:[
+    "Both say existing knowledge frames what you can see or invent: a paradigm defines legitimate puzzles, a category defines what an “animal” looks like.",
+    "Both say novelty comes from friction. For Kuhn, anomalies force revolutions. For Ward, constraints that clash with the example force people to synthesise from broad knowledge.",
+    "Difference: Kuhn is about communities, standards and persuasion. Ward is about individual cognition in lab tasks, with low ecological validity."]},
+  {q:"Ward and Shane: is prior knowledge a cage or a key?", a:[
+    "Ward mostly shows the downside: knowledge pulls ideas toward the central features of a category (fixation).",
+    "Shane shows the upside: idiosyncratic knowledge lets you see an opportunity nobody else can. But it's the same mechanism. The corridor that reveals one use hides the other seven.",
+    "Galenson reconciles them: whether knowledge helps depends on whether the innovation is experimental or conceptual."]},
+  {q:"Were Shane's 3DP founders old masters or young geniuses?", a:[
+    "Mostly they drew on long domain experience (25 years in pharma, supplying power plants, surgery), which sounds experimental.",
+    "But the opportunity itself arrived as a sudden, idiosyncratic insight (“it just clicked”), which sounds conceptual.",
+    "A good answer: Shane's founders combine deep knowledge of a market with a conceptual leap about a new technology. That fits the chapter's point that some fields have room for both."]},
+  {q:"Why might incumbents miss disruptive innovations, using these readings?", a:[
+    "Ward: managers are trapped by existing categories of their product and its use. Dominant designs may cognitively close the range of ideas.",
+    "Shane: they lack the knowledge corridor of low-end customers, so the opportunity is literally invisible to them. Even if one employee sees it, others must share that knowledge to back it.",
+    "Kuhn: standards for what counts as a “good” product are set by the current paradigm, so the new one looks worse by the old measures."]},
+  {q:"What does all this mean for how firms should organise innovation?", a:[
+    "Galenson: staff exploratory units with younger people if you need conceptual ideas, but not at the technological cutting edge.",
+    "Shane: decentralise. Let many people with different knowledge look at a technology. Avoid worldwide exclusive licences.",
+    "Jones: specialisation means great invention needs teams, so collaboration and shared recognition of ideas (Chapter 6) become central."]}
+];
+
+const LEVELS = ["Pre-paradigm wanderer","Puzzle solver","Normal scientist","Anomaly spotter","Crisis manager","Paradigm shifter","Incommensurable genius"];
+
+/* ============================ STATE ============================ */
+const KEY = "ksi-lab-v1";
+function loadState(){ try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && typeof s.xp==="number") return s; }catch(e){} return {xp:0, mods:{}, boss:0}; }
+let S = loadState();
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function M(id){ if(!S.mods[id]) S.mods[id] = {read:false, cards:false, quiz:0, games:{}}; return S.mods[id]; }
+
+function progress(m){
+  const st = M(m.id); let done = 0, total = 3 + m.games.length;
+  if(st.read) done++; if(st.cards) done++; if(st.quiz >= .7) done++;
+  m.games.forEach(g => { if(st.games[g.id]) done++; });
+  return done/total;
+}
+function level(){ const i = Math.min(LEVELS.length-1, Math.floor(S.xp/120)); return {i, name:LEVELS[i], frac:(S.xp%120)/120}; }
+function updateXP(){
+  const l = level();
+  document.getElementById("lvl").textContent = "Lv " + (l.i+1) + " · " + l.name;
+  document.getElementById("xpn").textContent = S.xp + " XP";
+  document.getElementById("xpfill").style.width = (l.i === LEVELS.length-1 ? 100 : l.frac*100) + "%";
+}
+let toastT;
+function toast(msg){ const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 1600); }
+function addXP(n, msg){ const before = level().i; S.xp += n; save(); updateXP(); const after = level().i; toast(after > before ? "Level up: " + LEVELS[after] + "!" : (msg ? msg + " · " : "") + "+" + n + " XP"); }
+
+/* ============================ HELPERS ============================ */
+const $ = (sel, el=document) => el.querySelector(sel);
+function h(html){ const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+const app = document.getElementById("app");
+function toTop(){ window.scrollTo({top:0}); }
+
+const GLYPHS = {
+  kuhn:`<svg class="glyph" viewBox="0 0 42 42" aria-hidden="true"><circle cx="21" cy="21" r="16" fill="none" style="stroke:var(--acc)" stroke-width="2.5" stroke-dasharray="70 30"/><path d="M33 9 l4 7 -8 0z" style="fill:var(--acc)"/><circle cx="21" cy="21" r="4" style="fill:var(--acc)"/></svg>`,
+  ward:`<svg class="glyph" viewBox="0 0 42 42" aria-hidden="true"><ellipse cx="21" cy="23" rx="13" ry="10" style="fill:var(--acc)"/><circle cx="16" cy="20" r="3" style="fill:var(--surface)"/><circle cx="26" cy="20" r="3" style="fill:var(--surface)"/><path d="M13 32 l-3 7 M29 32 l3 7 M16 13 l-3 -8 M26 13 l3 -8" style="stroke:var(--acc)" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  shane:`<svg class="glyph" viewBox="0 0 42 42" aria-hidden="true"><rect x="8" y="26" width="26" height="4" rx="1" style="fill:var(--acc)"/><rect x="10" y="20" width="22" height="4" rx="1" style="fill:var(--acc)" opacity=".75"/><rect x="12" y="14" width="18" height="4" rx="1" style="fill:var(--acc)" opacity=".5"/><path d="M21 4 v7" style="stroke:var(--acc)" stroke-width="2.5" stroke-linecap="round"/><circle cx="21" cy="36" r="2" style="fill:var(--acc)"/></svg>`,
+  ch5:`<svg class="glyph" viewBox="0 0 42 42" aria-hidden="true"><path d="M4 38 L16 14 L22 24 L28 8 L38 38 Z" style="fill:var(--acc)" opacity=".85"/><circle cx="28" cy="6" r="2.5" style="fill:var(--ink)"/></svg>`
+};
+
+/* ============================ HOME ============================ */
+function renderHome(){
+  const next = MODULES.find(m => progress(m) < 1);
+  app.innerHTML = "";
+  const hero = h(`<section class="hero">
+    <p class="mono muted">Lecture prep · 4 readings · ~60 min</p>
+    <h1>What you know decides what you can imagine.</h1>
+    <p class="lede">Four readings, one question: does knowledge help or block new ideas? Work through each stop: read the story, flip the cards, beat the quiz, play the game. Then face the final exam and the discussion questions before the lecture.</p>
+    <div class="row" style="justify-content:flex-start">${next ? `<button class="btn primary" id="go" style="--acc:var(${next.acc})">${progress(next)>0 ? "Continue" : "Start"}: ${esc(next.title)} →</button>` : `<button class="btn primary" id="go">Take the final exam →</button>`}</div>
+  </section>`);
+  app.append(hero);
+  $("#go", hero).onclick = () => next ? openModule(next.id) : document.getElementById("boss").scrollIntoView({behavior:"smooth"});
+
+  const route = h(`<div class="route"></div>`);
+  MODULES.forEach(m => {
+    const p = Math.round(progress(m)*100);
+    const b = h(`<button class="world" style="--acc:var(${m.acc})" type="button">
+      ${GLYPHS[m.id]}
+      <span class="step">${m.step}</span>
+      <h3>${esc(m.title)}</h3>
+      <span class="who">${esc(m.who)}</span>
+      <span class="tag">${esc(m.tag)}</span>
+      <span class="ring"><span class="ring-track"><span class="ring-fill" style="display:block;width:${p}%"></span></span>${p}%</span>
+    </button>`);
+    b.onclick = () => openModule(m.id);
+    route.append(b);
+  });
+  app.append(route);
+
+  app.append(h(`<div class="section-head"><h2>How the readings connect</h2><span class="mono muted">cheat sheet</span></div>`));
+  app.append(h(`<div class="panel synth"><table>
+    <thead><tr><th>Reading</th><th>Level</th><th>Role of knowledge</th><th>Takeaway</th></tr></thead>
+    <tbody>
+      <tr><td><b>Kuhn</b></td><td>Scientific community</td><td>Paradigm frames content & standards</td><td>Progress comes in non-cumulative revolutions. Rivals are incommensurable.</td></tr>
+      <tr><td><b>Galenson</b></td><td>Individual artist</td><td>Prerequisite or impediment</td><td>Experimental innovation needs deep knowledge. Conceptual needs freedom from it.</td></tr>
+      <tr><td><b>Ward</b></td><td>Individual mind</td><td>Constrains</td><td>Imagination recombines known categories. True leaps are rare.</td></tr>
+      <tr><td><b>Shane</b></td><td>Individual entrepreneur</td><td>Enables, narrowly</td><td>Prior knowledge reveals one opportunity and hides others.</td></tr>
+      <tr><td><b>Jones</b></td><td>Whole field</td><td>Growing stock makes it harder</td><td>More to learn → later great work. Paradigm shifts reset the climb.</td></tr>
+    </tbody></table></div>`));
+
+  app.append(h(`<div class="section-head" id="boss"><h2>Final exam</h2><span class="mono muted">${S.boss ? "best " + Math.round(S.boss*100) + "%" : "12 mixed questions"}</span></div>`));
+  const bossWrap = h(`<div></div>`);
+  app.append(bossWrap);
+  renderBossIntro(bossWrap);
+
+  app.append(h(`<div class="section-head"><h2>Be ready to say something in class</h2><span class="mono muted">think first, then reveal</span></div>`));
+  const discs = h(`<div class="discs"></div>`);
+  DISCUSSION.forEach((d,i) => {
+    discs.append(h(`<details class="disc" style="--acc:var(${MODULES[i%4].acc})"><summary><span class="mono">Q${i+1}</span><span>${esc(d.q)}</span></summary><div class="ans">${d.a.map(x=>`<p>${x}</p>`).join("")}</div></details>`));
+  });
+  app.append(discs);
+  const reset = h(`<p class="muted" style="margin-top:28px;font-size:.85rem">Progress is saved in this browser. <button class="btn" id="reset" style="padding:4px 12px;font-size:.8rem">Reset progress</button> <span id="resetq"></span></p>`);
+  app.append(reset);
+  $("#reset", reset).onclick = () => {
+    const q = $("#resetq", reset);
+    q.innerHTML = `Sure? <button class="btn" style="padding:4px 12px;font-size:.8rem" id="rs-yes">Yes, reset</button>`;
+    $("#rs-yes", reset).onclick = () => { S = {xp:0, mods:{}, boss:0}; save(); updateXP(); renderHome(); };
+  };
+}
+
+function renderBossIntro(wrap){
+  wrap.innerHTML = "";
+  const p = h(`<div class="panel" style="--acc:var(--kuhn)"><p>Twelve questions drawn at random from all four stops. Build a streak: each correct answer in a row is worth more XP.</p><div class="row" style="justify-content:flex-start"><button class="btn primary">Start the exam</button></div></div>`);
+  $("button", p).onclick = () => {
+    const pool = [];
+    MODULES.forEach(m => m.quiz.forEach(q => pool.push(Object.assign({mod:m}, q))));
+    runQuiz(wrap, shuffle(pool).slice(0,12), {boss:true, onDone:(score)=>{ if(score > (S.boss||0)){ S.boss = score; save(); } }});
+  };
+  wrap.append(p);
+}
+
+/* ============================ MODULE ============================ */
+let current = null;
+function openModule(id, tab){
+  current = MODULES.find(m => m.id === id);
+  const m = current, st = M(m.id);
+  app.innerHTML = "";
+  app.style.setProperty("--acc", `var(${m.acc})`);
+  const head = h(`<section class="mhead">
+    <button class="back" type="button">← All stops</button>
+    <p class="mono" style="color:var(--acc)">${m.step} · ${esc(m.who)}</p>
+    <h1>${esc(m.title)}</h1>
+    <p class="oneliner">${esc(m.oneLiner)}</p>
+  </section>`);
+  $(".back", head).onclick = () => { app.style.removeProperty("--acc"); renderHome(); toTop(); };
+  app.append(head);
+  const tabs = [["read","Read"],["cards","Flashcards"],["quiz","Quiz"],["play","Play"]];
+  const tabBar = h(`<div class="tabs" role="tablist"></div>`);
+  const body = h(`<div></div>`);
+  function doneFor(k){ return k==="read" ? st.read : k==="cards" ? st.cards : k==="quiz" ? st.quiz>=.7 : m.games.every(g=>st.games[g.id]); }
+  function show(k){
+    [...tabBar.children].forEach(b => b.setAttribute("aria-selected", b.dataset.k===k));
+    body.innerHTML = "";
+    ({read:renderRead, cards:renderCards, quiz:renderQuizTab, play:renderPlay})[k](body, m, () => refreshTabs());
+  }
+  function refreshTabs(){ [...tabBar.children].forEach(b => { b.innerHTML = b.dataset.label + (doneFor(b.dataset.k) ? `<span class="dot" aria-label="done"></span>` : ""); }); }
+  tabs.forEach(([k,label]) => {
+    const b = h(`<button class="tab" role="tab" type="button" data-k="${k}" data-label="${label}">${label}</button>`);
+    b.onclick = () => show(k);
+    tabBar.append(b);
+  });
+  refreshTabs();
+  app.append(tabBar, body);
+  show(tab || "read");
+  toTop();
+}
+
+function renderRead(el, m, refresh){
+  const st = M(m.id);
+  const wrap = h(`<div class="read"></div>`);
+  m.read.forEach((c,i) => wrap.append(h(`<article class="chunk"><span class="num">PART ${i+1} OF ${m.read.length}</span><h3>${c.h}</h3>${c.body}</article>`)));
+  const rem = h(`<article class="chunk"><span class="num">FIVE THINGS TO REMEMBER</span><ol class="remember">${m.remember.map(r=>`<li>${esc(r)}</li>`).join("")}</ol></article>`);
+  wrap.append(rem);
+  const btn = h(`<button class="btn primary done-read" type="button">${st.read ? "Read ✓ · go to flashcards →" : "I've read it · +20 XP"}</button>`);
+  btn.onclick = () => { if(!st.read){ st.read = true; addXP(20, "Reading done"); refresh(); } openModule(m.id, "cards"); };
+  wrap.append(btn);
+  el.append(wrap);
+}
+
+function renderCards(el, m, refresh){
+  const st = M(m.id);
+  let deck = shuffle(m.terms.map((t,i)=>i)), known = 0, total = m.terms.length;
+  const wrap = h(`<div class="fc-wrap"></div>`);
+  el.append(wrap);
+  function draw(){
+    wrap.innerHTML = "";
+    if(!deck.length){
+      if(!st.cards){ st.cards = true; addXP(25, "Deck cleared"); refresh(); }
+      wrap.append(h(`<div class="result"><p class="big">${total}/${total}</p><p>Every term sorted into “got it”. Take the quiz next.</p></div>`));
+      const r = h(`<div class="row"><button class="btn" type="button">Shuffle again</button><button class="btn primary" type="button">Go to the quiz →</button></div>`);
+      r.children[0].onclick = () => { deck = shuffle(m.terms.map((t,i)=>i)); known = 0; draw(); };
+      r.children[1].onclick = () => openModule(m.id, "quiz");
+      wrap.append(r); return;
+    }
+    const [term, def] = m.terms[deck[0]];
+    wrap.append(h(`<p class="mono muted">${known} of ${total} known · ${deck.length} left</p>`));
+    const card = h(`<button class="fc" type="button" aria-label="Flip card"><div class="fc-in">
+      <div class="fc-face front"><div><div class="fc-term">${esc(term)}</div></div><span class="fc-hint">TAP TO FLIP · SAY THE DEFINITION FIRST</span></div>
+      <div class="fc-face back"><div><p class="mono" style="color:var(--acc);margin-bottom:8px">${esc(term)}</p><p class="fc-def">${esc(def)}</p></div></div>
+    </div></button>`);
+    card.onclick = () => card.classList.toggle("flipped");
+    wrap.append(card);
+    const r = h(`<div class="row"><button class="btn" type="button">↺ Again later</button><button class="btn primary" type="button">✓ Got it</button></div>`);
+    r.children[0].onclick = () => { deck.push(deck.shift()); draw(); };
+    r.children[1].onclick = () => { deck.shift(); known++; S.xp += 2; save(); updateXP(); draw(); };
+    wrap.append(r);
+  }
+  draw();
+}
+
+function renderQuizTab(el, m, refresh){
+  const st = M(m.id);
+  const intro = h(`<div class="q-card"><h3>${m.quiz.length} questions on ${esc(m.title)}</h3><p class="muted">${st.quiz ? "Your best: " + Math.round(st.quiz*100) + "%. " : ""}Score 70% or more to complete this stop. Every answer comes with an explanation.</p><div class="row" style="justify-content:flex-start"><button class="btn primary" type="button">Start quiz</button></div></div>`);
+  $("button", intro).onclick = () => runQuiz(el, shuffle(m.quiz), {onDone:(score)=>{ if(score > st.quiz){ st.quiz = score; save(); refresh(); } }, mod:m});
+  el.append(intro);
+}
+
+function runQuiz(el, qs, opts){
+  let i = 0, right = 0, streak = 0, results = [];
+  function draw(){
+    el.innerHTML = "";
+    if(i >= qs.length) return finish();
+    const q = qs[i];
+    const order = shuffle(q.o.map((t,k)=>k));
+    const accVar = q.mod ? `var(${q.mod.acc})` : "var(--acc)";
+    const card = h(`<div class="q-card" style="--acc:${accVar}">
+      <div class="q-top"><span class="mono muted">Question ${i+1} / ${qs.length}${q.mod && opts.boss ? " · " + esc(q.mod.who.split(",")[0].split(" (")[0]) : ""}</span>${opts.boss ? `<span class="mono" style="color:var(--acc)">streak ×${streak}</span>` : ""}</div>
+      <div class="pips">${qs.map((_,k)=>`<span class="pip ${results[k]===true?"ok":results[k]===false?"no":k===i?"now":""}"></span>`).join("")}</div>
+      <p class="q-text">${esc(q.q)}</p>
+      <div class="opts"></div>
+    </div>`);
+    const box = $(".opts", card);
+    order.forEach((k,n) => {
+      const b = h(`<button class="opt" type="button"><span class="l">${"ABCD"[n]}</span><span>${esc(q.o[k])}</span></button>`);
+      b.onclick = () => {
+        [...box.children].forEach(x => x.disabled = true);
+        const ok = k === q.a;
+        results[i] = ok;
+        if(ok){ right++; streak++; b.classList.add("right"); const gain = opts.boss ? 5 + Math.min(streak,5)*2 : 5; S.xp += gain; save(); updateXP(); toast("Correct · +" + gain + " XP"); }
+        else { streak = 0; b.classList.add("wrong"); box.children[order.indexOf(q.a)].classList.add("right"); }
+        card.append(h(`<div class="why"><b>${ok ? "Correct." : "Not quite."}</b> ${esc(q.why)}</div>`));
+        const nx = h(`<div class="row" style="justify-content:flex-end"><button class="btn primary" type="button">${i+1<qs.length ? "Next →" : "See result"}</button></div>`);
+        $("button", nx).onclick = () => { i++; draw(); };
+        card.append(nx); $("button", nx).focus();
+      };
+      box.append(b);
+    });
+    el.append(card);
+  }
+  function finish(){
+    const score = right/qs.length;
+    opts.onDone && opts.onDone(score);
+    const title = score >= .9 ? "Paradigm shifter" : score >= .7 ? "Solid normal science" : score >= .5 ? "Anomalies detected" : "Crisis! Time to reread";
+    const missed = qs.filter((q,k)=>results[k]===false);
+    const r = h(`<div class="q-card result"><p class="mono muted">${title}</p><p class="big">${right}/${qs.length}</p>
+      ${missed.length ? `<div style="text-align:left;display:grid;gap:8px;width:100%"><p class="mono muted">Review what you missed</p>${missed.map(q=>`<div class="why" style="--acc:var(${q.mod?q.mod.acc:"--acc"})"><b>${esc(q.q)}</b><br>${esc(q.o[q.a])}</div>`).join("")}</div>` : `<p>Clean sweep. You're ready for this part of the lecture.</p>`}
+      <div class="row"><button class="btn" type="button">Try again</button>${opts.boss ? "" : `<button class="btn primary" type="button">Play the games →</button>`}</div></div>`);
+    const btns = r.querySelectorAll(".row button");
+    btns[0].onclick = () => opts.boss ? renderBossIntro(el) : runQuiz(el, shuffle(qs), opts);
+    if(btns[1]) btns[1].onclick = () => openModule(opts.mod.id, "play");
+    el.append(r);
+  }
+  draw();
+}
+
+/* ============================ GAMES ============================ */
+function renderPlay(el, m, refresh){
+  const st = M(m.id);
+  const wrap = h(`<div class="games"></div>`);
+  m.games.forEach(g => {
+    const box = h(`<section class="game"><div class="game-head"><h3>${esc(g.title)}</h3>${st.games[g.id] ? `<span class="badge">cleared</span>` : ""}</div><p class="muted">${esc(g.intro)}</p><div class="stage"></div></section>`);
+    const complete = (xp) => { if(!st.games[g.id]){ st.games[g.id] = true; addXP(xp, "Game cleared"); refresh(); const hd = $(".game-head", box); if(!$(".badge", hd)) hd.append(h(`<span class="badge">cleared</span>`)); } };
+    ({sort:gameSort, order:gameOrder, match:gameMatch, alien:gameAlien})[g.type]($(".stage", box), g, complete);
+    wrap.append(box);
+  });
+  el.append(wrap);
+}
+
+function gameSort(stage, g, complete){
+  let items = shuffle(g.items), i = 0, right = 0;
+  function draw(){
+    stage.innerHTML = "";
+    if(i >= items.length){
+      stage.append(h(`<div class="result"><p class="big">${right}/${items.length}</p><p>${right===items.length ? "Perfect sort." : "Play again to get a perfect run."}</p></div>`));
+      const b = h(`<div class="row"><button class="btn" type="button">Play again</button></div>`);
+      $("button", b).onclick = () => { items = shuffle(g.items); i = 0; right = 0; draw(); };
+      stage.append(b);
+      if(right >= items.length - 1) complete(30);
+      return;
+    }
+    stage.append(h(`<p class="mono muted">${i+1} / ${items.length}</p>`));
+    const item = h(`<div class="sort-item">${esc(items[i][0])}</div>`);
+    stage.append(item);
+    const bins = h(`<div class="bins"></div>`);
+    const fb = h(`<p class="feedback" aria-live="polite"></p>`);
+    g.bins.forEach(([name, sub], k) => {
+      const b = h(`<button class="bin" type="button">${esc(name)}<small>${esc(sub)}</small></button>`);
+      b.onclick = () => {
+        [...bins.children].forEach(x=>x.disabled=true);
+        const ok = items[i][1] === k;
+        if(ok){ right++; fb.className = "feedback ok"; fb.textContent = "Yes: " + g.bins[k][0] + "."; }
+        else { fb.className = "feedback no"; fb.textContent = "No, that's " + g.bins[items[i][1]][0] + "."; item.classList.add("shake"); }
+        setTimeout(()=>{ i++; draw(); }, ok ? 650 : 1400);
+      };
+      bins.append(b);
+    });
+    stage.append(bins, fb);
+  }
+  draw();
+}
+
+function gameOrder(stage, g, complete){
+  let pool, placed, mistakes;
+  function reset(){ pool = shuffle(g.items.map((t,i)=>i)); placed = []; mistakes = 0; draw(); }
+  function draw(){
+    stage.innerHTML = "";
+    const seq = h(`<ol class="seq"></ol>`);
+    g.items.forEach((t,k) => seq.append(k < placed.length ? h(`<li>${esc(g.items[placed[k]])}</li>`) : h(`<li class="slot">…</li>`)));
+    stage.append(seq);
+    if(placed.length === g.items.length){
+      stage.append(h(`<p class="feedback ok">Complete${mistakes ? " with " + mistakes + " wrong tap" + (mistakes>1?"s":"") : " with no mistakes"}.</p>`));
+      const b = h(`<div class="row" style="justify-content:flex-start"><button class="btn" type="button">Shuffle and play again</button></div>`);
+      $("button", b).onclick = reset; stage.append(b);
+      complete(25); return;
+    }
+    const chips = h(`<div class="chips"></div>`);
+    pool.forEach(k => {
+      const used = placed.includes(k);
+      const c = h(`<button class="chip ${used?"used":""}" type="button" ${used?"disabled":""}>${esc(g.items[k])}</button>`);
+      c.onclick = () => {
+        if(k === placed.length){ placed.push(k); draw(); }
+        else { mistakes++; c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake"); fb.textContent = "Not next. Think about what has to happen first."; fb.className = "feedback no"; }
+      };
+      chips.append(c);
+    });
+    const fb = h(`<p class="feedback" aria-live="polite">Tap the step that comes next.</p>`);
+    stage.append(chips, fb);
+  }
+  reset();
+}
+
+function gameMatch(stage, g, complete){
+  let left, right, locked, sel, mistakes;
+  function reset(){ left = shuffle(g.pairs.map((p,i)=>i)); right = shuffle(g.pairs.map((p,i)=>i)); locked = new Set(); sel = null; mistakes = 0; draw(); }
+  function draw(){
+    stage.innerHTML = "";
+    const grid = h(`<div class="match"><div class="col"></div><div class="col"></div></div>`);
+    const [cl, cr] = grid.children;
+    const fb = h(`<p class="feedback" aria-live="polite">${locked.size}/${g.pairs.length} matched${mistakes ? " · " + mistakes + " misses" : ""}</p>`);
+    left.forEach(k => {
+      const b = h(`<button class="m-item ${locked.has(k)?"locked":""} ${sel===k?"sel":""}" type="button">${esc(g.pairs[k][0])}</button>`);
+      b.disabled = locked.has(k);
+      b.onclick = () => { sel = k; draw(); };
+      cl.append(b);
+    });
+    right.forEach(k => {
+      const b = h(`<button class="m-item ${locked.has(k)?"locked":""}" type="button">${esc(g.pairs[k][1])}</button>`);
+      b.disabled = locked.has(k);
+      b.onclick = () => {
+        if(sel === null){ fb.textContent = "Pick something from the left column first."; return; }
+        if(sel === k){ locked.add(k); sel = null; draw(); }
+        else { mistakes++; b.classList.add("shake"); fb.className = "feedback no"; fb.textContent = "Not a match. Whose knowledge would point there?"; }
+      };
+      cr.append(b);
+    });
+    stage.append(grid, fb);
+    if(locked.size === g.pairs.length){
+      fb.className = "feedback ok"; fb.textContent = "All matched" + (mistakes ? " (" + mistakes + " misses)." : " with no misses!");
+      const b = h(`<div class="row" style="justify-content:flex-start"><button class="btn" type="button">Shuffle and play again</button></div>`);
+      $("button", b).onclick = reset; stage.append(b);
+      complete(35);
+    }
+  }
+  reset();
+}
+
+/* ---------- Alien Lab (Ward) ---------- */
+function gameAlien(stage, g, complete){
+  const o = {planet:"molten", cover:"feathers", eyes:2, legs:2, wings:"yes", sym:"yes", mouth:"beak", extra:"none"};
+  const OPTS = [
+    ["planet","Planet",[["molten","Molten lava, food islands"],["windy","Violent winds"],["ocean","Ocean world"],["plain","Anything goes"]]],
+    ["cover","Covering",[["feathers","Feathers"],["fur","Fur"],["scales","Scales"],["slime","Bare / slimy"]]],
+    ["eyes","Eyes",[[0,"0"],[1,"1"],[2,"2"],[3,"3"],[5,"5"]]],
+    ["legs","Legs",[[0,"0"],[2,"2"],[4,"4"],[6,"6"],[8,"8"]]],
+    ["wings","Wings",[["yes","Yes"],["no","No"]]],
+    ["sym","Body",[["yes","Symmetric"],["no","Asymmetric"]]],
+    ["mouth","Mouth",[["beak","Beak"],["jaws","Jaws"],["none","None"]]],
+    ["extra","Extra sense",[["none","None"],["heat","Heat sensor"],["wind","Wind whiskers"],["suction","Suction feet"]]]
+  ];
+  stage.innerHTML = "";
+  const lab = h(`<div class="lab"><div class="view"></div><div class="ctl"></div></div>`);
+  const view = $(".view", lab), ctl = $(".ctl", lab);
+  OPTS.forEach(([key, label, vals]) => {
+    const fs = h(`<fieldset><legend>${label}</legend><div class="seg"></div></fieldset>`);
+    vals.forEach(([v, t]) => {
+      const b = h(`<button type="button" aria-pressed="${o[key]===v}">${t}</button>`);
+      b.onclick = () => { o[key] = v; [...b.parentNode.children].forEach(x=>x.setAttribute("aria-pressed", x===b)); paint(); report.innerHTML = ""; };
+      $(".seg", fs).append(b);
+    });
+    ctl.append(fs);
+  });
+  const go = h(`<div class="row" style="justify-content:flex-start"><button class="btn primary" type="button">Analyse my alien</button><button class="btn" type="button">Random alien</button></div>`);
+  ctl.append(go);
+  const report = h(`<div class="report"></div>`);
+  stage.append(lab, report);
+  go.children[0].onclick = analyse;
+  go.children[1].onclick = () => {
+    OPTS.forEach(([key,,vals]) => { o[key] = vals[Math.floor(Math.random()*vals.length)][0]; });
+    [...ctl.querySelectorAll("fieldset")].forEach((fs, n) => { const key = OPTS[n][0]; [...fs.querySelectorAll("button")].forEach((b, j) => b.setAttribute("aria-pressed", OPTS[n][2][j][0] === o[key])); });
+    paint(); report.innerHTML = "";
+  };
+
+  function paint(){ view.innerHTML = alienSVG(o); }
+  function analyse(){
+    const central = [["Symmetry", o.sym==="yes"],["Appendages", o.legs>0 || o.wings==="yes"],["Senses", o.eyes>0 || o.extra==="heat" || o.extra==="wind"]];
+    const diffs = [];
+    if(![2].includes(o.eyes)) diffs.push(o.eyes===0 ? "no eyes" : "an unusual number of eyes ("+o.eyes+")");
+    if(![2,4].includes(o.legs)) diffs.push(o.legs===0 ? "no legs" : "an unusual number of legs ("+o.legs+")");
+    if(o.sym==="no") diffs.push("an asymmetric body");
+    if(o.extra==="heat" || o.extra==="wind") diffs.push("a sense earth animals mostly lack");
+    if(o.mouth==="none") diffs.push("no mouth");
+    const n = diffs.length;
+    const lines = [];
+    lines.push(`<b>Ward's central features:</b> <span class="meter">${central.map(([k,v])=>`<span class="${v?"":"off"}">${k} ${v?"kept":"dropped"}</span>`).join("")}</span>`);
+    const kept = central.filter(c=>c[1]).length;
+    lines.push(kept===3 ? "You kept all three central features, like nearly every one of Ward's participants and 74–80% of professional sci-fi aliens." : `You dropped ${3-kept} central feature${3-kept>1?"s":""}. Very few students ever did; even in sci-fi only about 1 in 4 aliens lacked senses or appendages.`);
+    if(n===0) lines.push("<b>Major differences from earth animals: 0.</b> Like about 35% of Ward's Experiment 1 students, you made an earth animal on another planet.");
+    else if(n<=2) lines.push(`<b>Major differences: ${n}</b> (${diffs.join(", ")}). Like most students: 65% had at least one major difference, but only 11% had more than two.`);
+    else lines.push(`<b>Major differences: ${n}</b> (${diffs.join(", ")}). Only 11% of Ward's students went beyond two. You left the path of least resistance.`);
+    if(o.cover==="feathers" && o.wings==="yes" && o.mouth==="beak") lines.push("<b>Bird in space!</b> Feathers + wings + beak is exactly the correlated-attribute cluster Ward found in Experiment 2: one cue pulls up a whole earth animal.");
+    else if(o.cover==="scales" && o.legs<=2 && o.planet==="ocean") lines.push("<b>Fish in space.</b> In Experiment 2, scales pulled in fins, gills and fewer legs.");
+    else if(o.cover==="feathers" && o.wings==="no") lines.push("Feathers without wings. You broke a correlated attribute that most of Ward's feather group kept.");
+    if(o.planet==="molten"){
+      if(o.wings==="yes") lines.push(o.cover==="fur" ? "Furry flier on the molten planet: like Ward's Molten + Fur group (70% flew). Without a ready-made bird to copy, they built fliers from general knowledge about adaptation." : "Flying across lava islands fits the environment. Ward's Molten + Feathers group had it easy because a bird already fits, so they copied birds and innovated less.");
+      else lines.push("No flight on the molten planet? Most participants gave molten-planet creatures a way to travel between food islands (flight, or heat-resistant feet).");
+      if(o.extra==="heat") lines.push("Heat sensing matches 7 of 40 molten-planet participants (e.g. spotting colder prey against hot ground).");
+    }
+    if(o.planet==="windy"){
+      if(o.wings==="yes") lines.push("Wings in violent wind? Only 35% of windy-planet feathered creatures flew, and most came with limits (gliding down safely, turning like a windmill).");
+      if(o.legs>=4 || o.extra==="suction") lines.push("Many legs or suction feet: that's how Ward's windy-planet participants adapted (60% gave 4+ legs; 22 of 40 added gripping feet, suction cups or claws).");
+    }
+    if(o.planet==="plain") lines.push("With no constraints, Ward predicts the path of least resistance: retrieve a typical animal and copy it. Did you?");
+    lines.push(`<span class="muted"><b>Ward's lesson:</b> to escape the structure, start from principles (“it needs a way to gather information”) instead of an example (“a dog has two eyes”). Change the planet and try again.</span>`);
+    report.innerHTML = `<ul>${lines.map(l=>`<li>${l}</li>`).join("")}</ul>`;
+    complete(40);
+  }
+  paint();
+}
+
+function alienSVG(o){
+  const W=320, H=250, cx=160, ground=218;
+  const cy = o.legs===0 ? 172 : 128, rx=64, ry=44;
+  const cov = {feathers:"--a-feather", fur:"--a-fur", scales:"--a-scale", slime:"--a-slime"}[o.cover];
+  const asym = o.sym==="no";
+  let bg = "";
+  if(o.planet==="molten") bg = `<rect width="${W}" height="${H}" style="fill:var(--planet-molten)"/><rect y="${ground}" width="${W}" height="${H-ground}" style="fill:var(--lava)"/><ellipse cx="60" cy="${ground}" rx="46" ry="8" style="fill:var(--planet-molten)"/><ellipse cx="258" cy="${ground+2}" rx="40" ry="7" style="fill:var(--planet-molten)"/><circle cx="270" cy="40" r="16" style="fill:var(--lava)" opacity=".5"/>`;
+  else if(o.planet==="windy") bg = `<rect width="${W}" height="${H}" style="fill:var(--planet-windy)"/><rect y="${ground}" width="${W}" height="${H-ground}" style="fill:var(--muted)" opacity=".5"/>${[40,70,100,150].map((y,i)=>`<path d="M${10+i*20} ${y} q60 -12 120 0 t120 0" fill="none" style="stroke:var(--surface)" stroke-width="3" stroke-linecap="round" opacity=".8"/>`).join("")}`;
+  else if(o.planet==="ocean") bg = `<rect width="${W}" height="${H}" style="fill:var(--planet-ocean)"/><rect y="${ground}" width="${W}" height="${H-ground}" style="fill:var(--a-scale)" opacity=".5"/>${[30,60,90].map(y=>`<path d="M0 ${y} q20 -8 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" fill="none" style="stroke:var(--surface)" stroke-width="1.5" opacity=".35"/>`).join("")}`;
+  else bg = `<rect width="${W}" height="${H}" style="fill:var(--planet-plain)"/><rect y="${ground}" width="${W}" height="${H-ground}" style="fill:var(--muted)" opacity=".35"/><circle cx="60" cy="50" r="22" style="fill:var(--surface)" opacity=".5"/>`;
+  const pat = {
+    feathers:`<pattern id="pt" width="16" height="12" patternUnits="userSpaceOnUse"><path d="M0 12 Q8 0 16 12" fill="none" style="stroke:var(--ink)" stroke-width="1.2" opacity=".3"/></pattern>`,
+    fur:`<pattern id="pt" width="9" height="9" patternUnits="userSpaceOnUse"><path d="M2 8 L4 2 M6 9 L8 3" style="stroke:var(--ink)" stroke-width="1.2" opacity=".28"/></pattern>`,
+    scales:`<pattern id="pt" width="14" height="10" patternUnits="userSpaceOnUse"><path d="M0 10 A7 7 0 0 1 14 10" fill="none" style="stroke:var(--ink)" stroke-width="1.2" opacity=".3"/></pattern>`,
+    slime:`<pattern id="pt" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="6" cy="7" r="2.5" style="fill:var(--surface)" opacity=".4"/><circle cx="16" cy="16" r="1.5" style="fill:var(--surface)" opacity=".4"/></pattern>`
+  }[o.cover];
+  let parts = "";
+  // wings
+  if(o.wings==="yes"){
+    const wl = `<path d="M${cx-rx+18} ${cy-10} Q${cx-rx-60} ${cy-90} ${cx-rx-30} ${cy+10} Q${cx-rx-5} ${cy-5} ${cx-rx+18} ${cy+8} Z" style="fill:var(${cov});stroke:var(--ink)" stroke-width="2" opacity=".92"/>`;
+    const wr = `<path d="M${cx+rx-18} ${cy-10} Q${cx+rx+60} ${cy-90} ${cx+rx+30} ${cy+10} Q${cx+rx+5} ${cy-5} ${cx+rx-18} ${cy+8} Z" style="fill:var(${cov});stroke:var(--ink)" stroke-width="2" opacity=".92"/>`;
+    parts += asym ? wl.replace(/-60/, "-80") : wl + wr;
+  }
+  // legs
+  let feet = "";
+  if(o.legs>0){
+    const n = o.legs, span = rx*1.3;
+    for(let k=0;k<n;k++){
+      let x = n===1 ? cx : cx - span/2 + span*k/(n-1);
+      if(asym) x = cx - span*0.7 + (span*0.8)*(k/(Math.max(n-1,1)));
+      const y0 = cy + ry*0.7, x1 = x + (x<cx ? -8 : 8);
+      parts += `<path d="M${x} ${y0} L${x1} ${ground-2}" style="stroke:var(--ink)" stroke-width="5" stroke-linecap="round"/>`;
+      feet += o.extra==="suction" ? `<circle cx="${x1}" cy="${ground-2}" r="6" style="fill:var(--a-slime);stroke:var(--ink)" stroke-width="2"/>` : "";
+    }
+  }
+  // body
+  const bodyT = asym ? `rotate(-8 ${cx} ${cy})` : "";
+  parts += `<g transform="${bodyT}"><ellipse cx="${cx}" cy="${cy}" rx="${asym?rx+10:rx}" ry="${ry}" style="fill:var(${cov});stroke:var(--ink)" stroke-width="2.5"/><ellipse cx="${cx}" cy="${cy}" rx="${asym?rx+10:rx}" ry="${ry}" fill="url(#pt)"/></g>`;
+  parts += feet;
+  // antenna / whiskers
+  if(o.extra==="heat") parts += `<path d="M${cx-10} ${cy-ry+4} Q${cx-24} ${cy-ry-34} ${cx-8} ${cy-ry-40}" fill="none" style="stroke:var(--ink)" stroke-width="2.5"/><circle cx="${cx-8}" cy="${cy-ry-42}" r="6" style="fill:var(--lava);stroke:var(--ink)" stroke-width="1.5"/>`;
+  if(o.extra==="wind") parts += [-1,1].map(s=>[0,8].map(d=>`<path d="M${cx+s*26} ${cy+10+d} l${s*38} ${-6+d}" style="stroke:var(--ink)" stroke-width="1.5"/>`).join("")).join("");
+  // eyes
+  const ey = cy - ry*0.35;
+  for(let k=0;k<o.eyes;k++){
+    let x = o.eyes===1 ? cx : cx - 36 + 72*k/(o.eyes-1);
+    let r = 10;
+    if(asym){ x = cx - 40 + 30*k; r = [12,6,9,5,8][k]; }
+    parts += `<circle cx="${x}" cy="${ey - (o.eyes>=3 && !asym ? Math.sin(Math.PI*k/(o.eyes-1))*8 : 0)}" r="${r}" style="fill:var(--surface);stroke:var(--ink)" stroke-width="2"/><circle cx="${x+2}" cy="${ey+1 - (o.eyes>=3 && !asym ? Math.sin(Math.PI*k/(o.eyes-1))*8 : 0)}" r="${r*0.45}" style="fill:var(--ink)"/>`;
+  }
+  // mouth
+  const my = cy + ry*0.25, mx = asym ? cx - 18 : cx;
+  if(o.mouth==="beak") parts += `<path d="M${mx-12} ${my-4} L${mx+12} ${my-4} L${mx} ${my+16} Z" style="fill:var(--ch5);stroke:var(--ink)" stroke-width="2" stroke-linejoin="round"/>`;
+  if(o.mouth==="jaws") parts += `<path d="M${mx-20} ${my} Q${mx} ${my+18} ${mx+20} ${my}" style="fill:var(--ink)"/><path d="M${mx-14} ${my+2} l4 6 l4 -5 l4 6 l4 -6 l4 6 l4 -6" fill="none" style="stroke:var(--surface)" stroke-width="1.5"/>`;
+  const labelPlanet = {molten:"MOLTEN PLANET",windy:"WINDY PLANET",ocean:"OCEAN WORLD",plain:"UNKNOWN PLANET"}[o.planet];
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Your imagined alien on the ${labelPlanet.toLowerCase()}"><defs>${pat}</defs>${bg}${parts}<rect x="6" y="${H-24}" width="${labelPlanet.length*7+14}" height="18" rx="4" style="fill:var(--ink)" opacity=".8"/><text x="13" y="${H-11}" style="fill:var(--surface);font:500 10px var(--f-mono);letter-spacing:.08em">${labelPlanet}</text></svg>`;
+}
+
+/* ============================ BOOT ============================ */
+document.getElementById("brand").onclick = () => { app.style.removeProperty("--acc"); renderHome(); toTop(); };
+updateXP();
+renderHome();
+</script>
