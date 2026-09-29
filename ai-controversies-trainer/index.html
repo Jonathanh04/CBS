@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Controversies Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one narrow study column; tabs on top; a cold→hot gradient (the course's hot/cold scale) carries progress. */
+:root {
+  --bg: #F3F5F9; --surface: #FFFFFF; --sunk: #E9EDF3; --ink: #16202E; --muted: #5A6677; --line: #D8DEE8;
+  --cold: #2E4FD6; --hot: #D3303C; --accent: #2E4FD6; --accent-ink: #FFFFFF;
+  --good: #1B8456; --good-bg: #E3F4EC; --bad: #BF3434; --bad-bg: #FBE7E7;
+  --t-high: #E07A1F; --t-lim: #C9A100; --t-min: #1F9A5A;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E131A; --surface: #171F29; --sunk: #1F2835; --ink: #E6EBF2; --muted: #98A4B5; --line: #2A3442;
+  --cold: #7F97FF; --hot: #FF6E6E; --accent: #7F97FF; --accent-ink: #0E131A;
+  --good: #52C98F; --good-bg: #173226; --bad: #FF8080; --bad-bg: #3A1D20;
+  --t-high: #F29B4C; --t-lim: #E6C542; --t-min: #52C98F; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #0E131A; --surface: #171F29; --sunk: #1F2835; --ink: #E6EBF2; --muted: #98A4B5; --line: #2A3442;
+  --cold: #7F97FF; --hot: #FF6E6E; --accent: #7F97FF; --accent-ink: #0E131A;
+  --good: #52C98F; --good-bg: #173226; --bad: #FF8080; --bad-bg: #3A1D20;
+  --t-high: #F29B4C; --t-lim: #E6C542; --t-min: #52C98F; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body); }
+.wrap { max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 22px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(28px, 6vw, 40px); font-weight: 800; line-height: 1.05; }
+h2 { font-size: 21px; font-weight: 600; line-height: 1.3; }
+h3 { font-size: 17px; font-weight: 600; }
+p { margin: 0; }
+.label { font: 500 11.5px/1.2 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.scale { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--cold), var(--hot)); }
+header { display: grid; gap: 10px; }
+header .scale { width: 120px; }
+.sub { color: var(--muted); max-width: 60ch; }
+
+nav { display: flex; gap: 4px; background: var(--sunk); padding: 4px; border-radius: 12px; }
+nav button { flex: 1; border: 0; background: transparent; color: var(--muted); font: 600 14px var(--f-body); padding: 10px 8px; border-radius: 9px; cursor: pointer; }
+nav button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / .08); }
+
+button { font-family: var(--f-body); }
+.btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 14px var(--f-body); padding: 9px 16px; border-radius: 8px; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: .45; cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+select { font: 500 14px var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; max-width: 100%; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.row.end { justify-content: flex-end; }
+.field { display: grid; gap: 4px; min-width: 0; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 22px; display: grid; gap: 16px; min-width: 0; }
+.meter { display: grid; gap: 8px; }
+.meter .track { height: 6px; border-radius: 3px; background: var(--sunk); overflow: hidden; }
+.meter .fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--cold), var(--hot)); transition: width .3s; }
+.meter .row { justify-content: space-between; font-variant-numeric: tabular-nums; }
+
+.opts { display: grid; gap: 8px; }
+.opt { display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; text-align: left; width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 400 15px/1.45 var(--f-body); padding: 11px 14px; border-radius: 8px; cursor: pointer; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt .key { font: 500 12px/22px var(--f-mono); text-align: center; border-radius: 5px; background: var(--sunk); color: var(--muted); }
+.opt:disabled { cursor: default; }
+.opt.right { border-color: var(--good); background: var(--good-bg); }
+.opt.right .key { background: var(--good); color: var(--surface); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.opt.wrong .key { background: var(--bad); color: var(--surface); }
+.feedback { border-left: 3px solid var(--good); padding: 4px 0 4px 14px; display: grid; gap: 4px; }
+.feedback.no { border-left-color: var(--bad); }
+.feedback strong { font-family: var(--f-display); font-size: 16px; }
+
+.score { font: 800 56px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.review { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.review li { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 3px; }
+.review .ans { color: var(--good); font-weight: 600; }
+
+/* Flashcards */
+.flash { perspective: 1200px; cursor: pointer; }
+.flash-inner { position: relative; min-height: 230px; transition: transform .45s; transform-style: preserve-3d; }
+.flash.flipped .flash-inner { transform: rotateY(180deg); }
+.face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 24px; display: grid; align-content: center; gap: 10px; overflow: auto; }
+.face.back { transform: rotateY(180deg); border-color: var(--accent); }
+.face .term { font: 600 clamp(22px, 5vw, 28px)/1.2 var(--f-display); text-wrap: balance; }
+.face .hint { position: absolute; bottom: 12px; right: 16px; }
+.deckstats { display: flex; gap: 18px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.deckstats b { font-family: var(--f-display); font-size: 20px; margin-right: 4px; }
+
+/* Drills */
+.drill-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.drill-pick { text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: var(--r); padding: 14px 16px; cursor: pointer; display: grid; gap: 4px; font: 400 14px/1.4 var(--f-body); }
+.drill-pick[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.drill-pick strong { font: 600 16px var(--f-display); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; min-height: 44px; }
+.chip { border: 1px dashed var(--muted); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 8px 12px; font: 500 14px/1.3 var(--f-body); cursor: pointer; text-align: left; }
+.chip:hover { border-style: solid; border-color: var(--accent); }
+.slots { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; counter-reset: s; }
+.slots li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: center; }
+.slots li::before { content: counter(s); font: 500 12px var(--f-mono); color: var(--muted); text-align: center; }
+.slot { border: 1px solid var(--line); background: var(--sunk); border-radius: 8px; padding: 8px 12px; min-height: 40px; font: 500 14px/1.35 var(--f-body); color: var(--ink); text-align: left; width: 100%; cursor: pointer; }
+.slot:empty { cursor: default; }
+.slot.right { border-color: var(--good); background: var(--good-bg); }
+.slot.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.endcaps { display: flex; justify-content: space-between; }
+.tiers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tier { border: 1px solid var(--line); border-left: 6px solid var(--c); background: var(--surface); color: var(--ink); text-align: left; border-radius: 8px; padding: 10px 12px; cursor: pointer; display: grid; gap: 2px; font: 400 13px/1.35 var(--f-body); }
+.tier strong { font: 600 15px var(--f-display); }
+.tier:hover:not(:disabled) { background: var(--sunk); }
+.tier:disabled { cursor: default; }
+.tier.right { background: var(--good-bg); border-color: var(--good); border-left-color: var(--c); }
+.tier.wrong { background: var(--bad-bg); border-color: var(--bad); border-left-color: var(--c); }
+.sort-item { font: 600 clamp(19px, 4.6vw, 24px)/1.25 var(--f-display); }
+footer { color: var(--muted); font-size: 13px; }
+kbd { font: 500 11px var(--f-mono); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; background: var(--sunk); }
+@media (max-width: 480px) { .panel { padding: 16px; } .tiers { grid-template-columns: 1fr; } .kbdhint { display: none; } }
+@media (prefers-reduced-motion: reduce) { .flash-inner, .meter .fill { transition: none; } }
+</style>
+<style>[hidden]{display:none!important} body{margin:0} img{max-width:100%}</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="scale" aria-hidden="true"></div>
+    <h1>AI Controversies Trainer</h1>
+    <p class="sub">Practise the lecture <em>Controversies of Artificial Intelligence</em>, Exercise Class 3 on AI and regulation, Mügge (2024) and Liebig et al. (2024).</p>
+  </header>
+
+  <nav role="tablist" aria-label="Study mode">
+    <button role="tab" id="tab-quiz" aria-selected="true" aria-controls="quiz">Quiz</button>
+    <button role="tab" id="tab-cards" aria-selected="false" aria-controls="cards">Flashcards</button>
+    <button role="tab" id="tab-drills" aria-selected="false" aria-controls="drills">Drills</button>
+  </nav>
+
+  <!-- QUIZ -->
+  <section id="quiz" role="tabpanel" aria-labelledby="tab-quiz" class="wrap" style="padding:0;gap:14px">
+    <div class="row">
+      <div class="field"><label class="label" for="quizTopic">Topic</label><select id="quizTopic"></select></div>
+      <div class="field"><label class="label" for="quizLen">Questions</label>
+        <select id="quizLen"><option value="10">10</option><option value="20">20</option><option value="999">All</option></select></div>
+      <div class="field"><span class="label">&nbsp;</span><button class="btn" id="quizNew">Start new quiz</button></div>
+    </div>
+    <div class="panel" id="quizBox"></div>
+  </section>
+
+  <!-- FLASHCARDS -->
+  <section id="cards" role="tabpanel" aria-labelledby="tab-cards" hidden class="wrap" style="padding:0;gap:14px">
+    <div class="row" style="justify-content:space-between">
+      <div class="field"><label class="label" for="cardTopic">Topic</label><select id="cardTopic"></select></div>
+      <div class="deckstats" id="deckStats"></div>
+    </div>
+    <div id="cardArea"></div>
+    <p class="muted kbdhint" style="font-size:13px"><kbd>Space</kbd> flip · <kbd>←</kbd> still learning · <kbd>→</kbd> got it</p>
+  </section>
+
+  <!-- DRILLS -->
+  <section id="drills" role="tabpanel" aria-labelledby="tab-drills" hidden class="wrap" style="padding:0;gap:14px">
+    <div class="drill-list" id="drillList"></div>
+    <div class="panel" id="drillBox"></div>
+  </section>
+
+  <footer>Built from your lecture summary. Progress on flashcards is saved in this browser only.</footer>
+</div>
+
+<script>
+const TOPICS = {
+  basics: "Big picture & controversy mapping",
+  controv: "The AI controversies",
+  biz: "Business model & labour",
+  reg: "Regulation & the EU AI Act",
+  hot: "Hot vs cold controversies",
+  read: "Readings: Liebig & Mügge",
+  proj: "Group project"
+};
+
+/* Each question: first option is correct; options are shuffled at display time. */
+const QUESTIONS = [
+  // basics
+  { t:"basics", q:"What are the four questions of controversy mapping, in order?",
+    o:["Issue → Actors → Dispute → Regulation","Actors → Issue → Regulation → Dispute","Issue → Dispute → Actors → Regulation","Regulation → Issue → Actors → Dispute"],
+    e:"What is the problem? Who is involved? Where do they clash? What regulation could each accept?" },
+  { t:"basics", q:"What did John Maynard Keynes predict in 1930 about technological progress?",
+    o:["It would allow a 15-hour working week","It would cause permanent mass unemployment","It would end the business cycle","It would require a universal basic income"],
+    e:"Keynes's 15-hour week is the lecture's classic utopian vision of automation." },
+  { t:"basics", q:"Srnicek and Williams's book 'Inventing the Future' calls for…",
+    o:["Full automation and a universal basic income","A global pause on AI development","Nationalising big tech platforms","A return to a 40-hour week"],
+    e:"It sits on the utopian side of the debate, next to Keynes." },
+  { t:"basics", q:"In the CNN poll shown on the dystopian side, what share of CEOs said AI could destroy humanity?",
+    o:["42%","12%","25%","67%"],
+    e:"The slides pair it with an Anthropic researcher estimating a more than 10% chance that AI could kill all humans." },
+  { t:"basics", q:"Why does the lecture show both utopian and dystopian visions of AI?",
+    o:["Both are powerful narratives, and narratives shape what policy seems necessary","To show that the utopian view is scientifically correct","To show that experts agree AI is dangerous","To show that AI debates have no effect on policy"],
+    e:"The point is not which is true. Narratives frame what regulation looks necessary." },
+  { t:"basics", q:"The Dutch welfare fraud scandal (toeslagenaffaire) is an example of which kind of 'AI'?",
+    o:["Prediction & scoring","Generative AI","Recommender systems","Robotics & vehicles"],
+    e:"Prediction and scoring covers credit, hiring and welfare fraud detection." },
+  { t:"basics", q:"Which point about the term 'AI' does the lecture stress?",
+    o:["Much of what is sold as AI is ordinary statistics or automation, so product claims should be questioned","AI refers to one specific technology: large language models","Only systems that can learn on their own count as AI","The EU AI Act avoids defining AI"],
+    e:"'AI' is an umbrella term. 'AI as a label' is often just statistics. The EU AI Act does give a legal definition and risk tiers." },
+  { t:"basics", q:"Which topics does the lecture say AI connects to?",
+    o:["Platform power, attention, privacy, labour, the environment and misinformation","Only privacy and cybersecurity","Only labour markets","Only military applications"],
+    e:"AI links to every other topic in the course." },
+
+  // controversies
+  { t:"controv", q:"In the IP rights controversy, why don't artists and record labels always share interests?",
+    o:["Artists often don't own their work","Labels refuse to use AI","Artists are paid per token","Labels are owned by AI companies"],
+    e:"The question is how artists are compensated when AI is trained on their work or helps produce a hit." },
+  { t:"controv", q:"Why do chatbots have an attention-economy incentive?",
+    o:["They earn money per token, so they benefit when users keep prompting","They are funded purely by display ads","They are paid per user sign-up","They are required by law to maximise engagement"],
+    e:"They can keep users prompting by being useful, by flattering users, or by almost finishing a task. This is linked to reports of 'AI psychosis'." },
+  { t:"controv", q:"A New Jersey data centre fined $1.1m for dozens of unpermitted generators illustrates which controversy?",
+    o:["Energy","Critical minerals","Content moderation","Platform power"],
+    e:"Data centres consume huge amounts of power. Actors: AI firms, utilities, local communities, regulators." },
+  { t:"controv", q:"Who does the lecture say often does AI content moderation work?",
+    o:["Workers, often women in rural India, who watch hours of violent and abusive content","Volunteer moderators in Silicon Valley","Mostly automated systems with no human input","Government censors"],
+    e:"This is one of the global costs of AI that Mügge says EU policy largely ignores." },
+  { t:"controv", q:"Stanford used an AI-altered photo that replaced a Hispanic student with a Black woman. Which controversy is this?",
+    o:["User responsibility","Misinformation","IP rights","Harmful uses"],
+    e:"It asks whether irresponsible use should be regulated. The actors are users and institutions, not just AI companies." },
+  { t:"controv", q:"The fake video of President Zelensky is an example of…",
+    o:["Misinformation (deepfakes)","Content moderation","Cybersecurity and privacy","User responsibility"],
+    e:"Actors: platforms, governments, voters, media." },
+  { t:"controv", q:"Reports said OpenAI's agents compromised Hugging Face. What question does the lecture raise?",
+    o:["Is this proof of a super-powerful AI, or a badly built sandbox spun into PR hype?","Should Hugging Face be banned?","Should open-source AI be made illegal?","Why did the agents use too many tokens?"],
+    e:"It also asks who is legally responsible: the company or specific engineers." },
+  { t:"controv", q:"In the platform power controversy, who might favour rules on unconsented training data?",
+    o:["New entrants","Google, Amazon and Facebook","Chip makers","Content moderators"],
+    e:"Incumbents have decades of user data and shape the agenda through lobbying. New entrants lack that data advantage." },
+  { t:"controv", q:"Which controversy is about scarce minerals whose supply chains are geopolitically sensitive?",
+    o:["Critical minerals","Energy","Platform power","Cybersecurity"],
+    e:"Cited source: the IEA Critical Minerals Outlook 2026. Actors: states, mining regions, chip makers." },
+
+  // business model & labour
+  { t:"biz", q:"Why, according to Steve Eisman, do AI firms warn of doomsday?",
+    o:["To 'manufacture a crisis' and get regulation they can shape into a duopoly, because they have no protective moat","Because their engineers have seen dangerous capabilities","To delay their IPOs","To discourage investors"],
+    e:"He also notes open-weight models are taking market share, and firms calling for a slowdown are not postponing their IPOs." },
+  { t:"biz", q:"What is the core idea of 'tokenomics' in the lecture?",
+    o:["If the tokens for a task cost more than the labour, businesses won't automate it","Tokens are a cryptocurrency used to pay AI firms","The more tokens a model uses, the smarter it becomes","Token prices always fall, so automation is inevitable"],
+    e:"Classic microeconomics from a Citadel Securities report: what matters is marginal cost. Adoption is driven by economics, not just capability." },
+  { t:"biz", q:"In the tokenomics chart (Figure 4), what happens as task complexity rises?",
+    o:["Token cost rises until humans become cheaper than AI","Token cost falls, so AI always wins","Labour cost rises faster than token cost","Both costs stay flat"],
+    e:"Long agentic workflows are token-hungry, so humans can become the cheaper option: re-hire." },
+  { t:"biz", q:"Which examples show token bills growing too large?",
+    o:["Amazon removed its token leaderboard; Microsoft cancelled some AI coding subscriptions","Google stopped offering search","Nvidia stopped selling chips","OpenAI stopped charging for tokens"],
+    e:"Running frontier models is expensive in energy and chips." },
+  { t:"biz", q:"What does the 'Gru's plan' meme illustrate?",
+    o:["The steps are clear, but the step to profit is missing","AI firms have a secret villain plan","Regulation always arrives too late","Hype always turns into profit"],
+    e:"Nvidia became the most valuable company and OpenAI's valuation rose, while OpenAI's losses deepened." },
+  { t:"biz", q:"What are the two possible endings of the AI market-creation phase?",
+    o:["A profit squeeze (enshittification) or a bubble (systemic risk, possible bailouts)","Nationalisation or open-sourcing","A global ban or a pause","Perfect competition or monopoly regulation"],
+    e:"'And then!': ads, usage limits, higher prices. 'Or… not?': AI valuation bubble, over-exposed investors, possible government bailout." },
+  { t:"biz", q:"What does 'enshittification' mean for AI users?",
+    o:["Ads, usage limits and higher prices once a firm dominates","Lower-quality training data","Models getting smaller over time","Mandatory safety warnings"],
+    e:"If a firm wins the winner-takes-all race, users may face enshittification." },
+  { t:"biz", q:"Why do AI companies take ever larger risks?",
+    o:["The market may be dominated by very few firms, so they either win or go bankrupt","Regulators require them to","Their products are already profitable","Investors demand low-risk strategies"],
+    e:"This winner-takes-all logic also rewards hype, including doomsday hype." },
+  { t:"biz", q:"What is Solow's paradox (1987)?",
+    o:["You can see computers everywhere except in the productivity statistics","Automation always destroys more jobs than it creates","Productivity rises faster than wages","Technology makes work hours longer"],
+    e:"The same question now applies to AI: will it transform productivity or not?" },
+  { t:"biz", q:"Which economist is associated with 'creative destruction'?",
+    o:["Joseph Schumpeter","Robert Solow","John Maynard Keynes","Steve Eisman"],
+    e:"The lecture uses Schumpeter to frame AI's effect on the labour market." },
+  { t:"biz", q:"Which new job does the lecture mention as emerging from AI?",
+    o:["Vibe coding cleanup specialist","Token auditor","Prompt lawyer","Deepfake detective"],
+    e:"They fix code written by AI. The evidence on AI and jobs is mixed: some firms are re-hiring engineers after running out of tokens." },
+
+  // regulation
+  { t:"reg", q:"Who signed the 2023 'Pause Giant AI Experiments' open letter?",
+    o:["Elon Musk, Steve Wozniak, Emad Mostaque and over 3,000 others","Sam Altman and the OpenAI board","The European Commission","Steve Eisman and Citadel Securities"],
+    e:"It argued powerful AI should be developed only once its effects are known to be positive. Seen through Eisman's lens, such calls can also serve business interests." },
+  { t:"reg", q:"When did the EU AI Act enter into force?",
+    o:["August 2024","April 2021","January 2023","December 2025"],
+    e:"The EU proposed the AI Act in 2021. It entered into force in August 2024." },
+  { t:"reg", q:"Which trend does the governance timeline show?",
+    o:["A shift from soft law and self-governance to hard rules","A shift from hard rules to self-regulation","No change since 2016","A shift from EU leadership to US leadership"],
+    e:"Early milestones were reports, principles and guidelines. From the 2021 AI Act proposal onwards, hard rules follow." },
+  { t:"reg", q:"Under the EU AI Act, social scoring falls into which tier?",
+    o:["Unacceptable risk (banned)","High risk","Limited risk","Minimal risk"],
+    e:"Social scoring and manipulation are banned." },
+  { t:"reg", q:"Under the EU AI Act, chatbots and deepfakes carry…",
+    o:["Transparency duties (limited risk)","A total ban","Strict requirements (high risk)","No obligations"],
+    e:"Limited-risk systems must be transparent, for example telling people they are talking to a chatbot." },
+  { t:"reg", q:"Which of these is on the Annex III high-risk list?",
+    o:["Credit scoring","Spam filters","Video games","Social scoring"],
+    e:"Annex III includes biometric identification, critical infrastructure, education, employment, public benefits, policing, migration, justice, credit scoring and insurance." },
+  { t:"reg", q:"Spam filters and video games sit in which AI Act tier?",
+    o:["Minimal risk: no new obligations","Limited risk","High risk","Unacceptable risk"],
+    e:"Most everyday AI sits at the bottom of the pyramid." },
+  { t:"reg", q:"What was the point of the lecture's closing 'kill switch' joke?",
+    o:["Guardrails built by companies themselves can be porous and inconsistent","AI can already switch itself off","Image generators should be banned","Lecturers should not use AI"],
+    e:"The generator refused the prompt, yet an image of exactly that appeared on the next slide." },
+  { t:"reg", q:"Which regulatory rationale fits 'firms know far more about their models than regulators or users do'?",
+    o:["Correct information asymmetries","Encourage innovation","Protect competition","Prevent systemic risks"],
+    e:"Because of this asymmetry, firms can hype or play down risks." },
+  { t:"reg", q:"Which regulatory rationale fits 'the risk that regulation itself creates a duopoly'?",
+    o:["Protect competition and prevent monopoly","Protect privacy and fundamental rights","Protect consumers from harm","Correct information asymmetries"],
+    e:"This combines winner-takes-all dynamics, incumbents' data advantages and Eisman's argument." },
+  { t:"reg", q:"'Financial over-exposure to an AI bubble' is an example of which regulatory rationale?",
+    o:["Prevent systemic risks","Encourage innovation","Protect consumers from harm","Correct information asymmetries"],
+    e:"Systemic risks also include catastrophic misuse or loss of control." },
+
+  // hot vs cold
+  { t:"hot", q:"What defines a hot controversy?",
+    o:["Everything is in dispute, even what to call the problem and where to address it","Rules exist but are often broken","Actors are known but disagree strongly","It gets a lot of media attention"],
+    e:"In a hot controversy, valid knowledge, frames of reference and the relevant actors are all contested." },
+  { t:"hot", q:"What defines a cold controversy?",
+    o:["Rules are established: actors identified, interests stable, responsibilities accepted","Nobody cares about the issue","The issue has been fully resolved","No regulation exists yet"],
+    e:"A cold controversy can still be controversial, but it is clear where the issue should be addressed." },
+  { t:"hot", q:"Liebig et al.'s hot/cold distinction builds on which scholars?",
+    o:["Michel Callon (1998) and Tommaso Venturini (2010)","Schumpeter and Solow","Srnicek and Williams","Mügge and Eisman"],
+    e:"Venturini also developed controversy mapping as a method." },
+  { t:"hot", q:"Which example sits at the coldest end of the scale in Figure 8?",
+    o:["Nuclear arms (institutionalised)","Human hackers committing crime","Autonomous weapon systems","Rogue AI agents (Hugging Face hack)"],
+    e:"From cold to hot: nuclear arms, computer viruses by email, human hackers, autonomous weapon systems, rogue AI agents." },
+  { t:"hot", q:"Why is AI a hot controversy?",
+    o:["Its actors are new, their interests are hard to identify, and the data, institutions and expertise aren't established","It is only discussed by activists","All governments have banned it","It has existed for too long"],
+    e:"We don't even know what to call the problem or where to address it." },
+  { t:"hot", q:"What does the 'normalise it' strategy for regulating a hot controversy involve?",
+    o:["Fitting AI into existing frames (bias, privacy) and institutions, and leaving the most contested issues out","Banning the technology until it cools","Comparing AI to nuclear arms","Letting companies regulate themselves"],
+    e:"This is what Liebig et al. found in Germany: controversies 'covered' rather than closed." },
+  { t:"hot", q:"What does the 'find an analogy' strategy involve?",
+    o:["Comparing AI to a cold controversy with existing rules, then testing where the analogy breaks","Copying another country's AI law","Asking AI firms to write the rules","Waiting until the controversy cools on its own"],
+    e:"For the rogue AI case, the class compared it to human hackers, computer viruses and nuclear arms." },
+  { t:"hot", q:"Where does the nuclear weapons analogy for frontier AI hold?",
+    o:["Harms cross borders, few actors can build the most advanced systems, and international monitoring would be needed","AI is built mainly by states","You can count AI models like warheads","AI has few everyday uses"],
+    e:"The other three options are exactly where the analogy breaks down." },
+  { t:"hot", q:"Which is a weakness of the nuclear analogy?",
+    o:["AI is built by private firms, software can be copied, and there is no equivalent of counting warheads","Nuclear arms have no international rules","AI harms stay within national borders","Only states can afford AI"],
+    e:"Open-weight models also spread freely, and AI has countless everyday uses." },
+  { t:"hot", q:"What harm could the nuclear analogy do?",
+    o:["Inflate the sense of AI's power (feeding hype) and lock in today's leading firms as the only 'licensed' developers","Make AI regulation impossible","Make AI cheaper to build","Cool the controversy too quickly"],
+    e:"Possible benefit: it gives a ready vocabulary and institutional model that can help cool a hot problem." },
+
+  // readings
+  { t:"read", q:"Which period of German AI policy did Liebig et al. study?",
+    o:["2012–2021","2000–2010","2016–2024","2020–2023"],
+    e:"They show what happens when a hot controversy is handled by normalisation." },
+  { t:"read", q:"How did German policy mainly frame AI, according to Liebig et al.?",
+    o:["As an economic opportunity, with funding as the most common policy tool","As a threat requiring bans","As a military issue","As a consumer protection issue"],
+    e:"AI was taken for granted as inevitable: a tool, not a problem." },
+  { t:"read", q:"How often were bans or restrictions proposed across all the German documents Liebig et al. studied?",
+    o:["Only four times","In every document","Never","About half the time"],
+    e:"Bans were rarely proposed. AI was absorbed into routine institutions." },
+  { t:"read", q:"What happened to autonomous weapon systems in German AI policy?",
+    o:["They were discussed but left out of final reports: the controversy was 'covered' rather than closed","They were banned outright","They were never mentioned","They became the main policy focus"],
+    e:"The most contested issues are often the ones missing from official documents." },
+  { t:"read", q:"Which issues did German policy prioritise, according to Liebig et al.?",
+    o:["Security and privacy over fairness and discrimination","Fairness over security","Labour rights over innovation","Energy use over privacy"],
+    e:"Issues that fit established frames like privacy and security got attention. IP rights, content moderation and energy did not." },
+  { t:"read", q:"On Mügge's 'Subject: for whom?' axis, where does EU AI policy sit?",
+    o:["Jurisdictional sovereignty","Citizen sovereignty","Global responsibility","Escape the AI race"],
+    e:"Mügge's three axes: jurisdictional vs citizen sovereignty, boost competitiveness vs escape the AI race, Euro-centric vs global responsibility." },
+  { t:"read", q:"On Mügge's 'Objective: to what end?' axis, EU AI policy aims to…",
+    o:["Boost competitiveness","Escape the AI race","Protect citizens over jurisdictions","Take global responsibility"],
+    e:"This is the same race logic as the lecture's winner-takes-all business model." },
+  { t:"read", q:"During the AI Act negotiations, which countries pushed back on strict foundation model rules?",
+    o:["France, Germany and Italy","Spain, Poland and Sweden","The Netherlands and Denmark","Ireland and Luxembourg"],
+    e:"They wanted to protect start-ups like Mistral and Aleph Alpha." },
+  { t:"read", q:"Which Commission vice-president warned against being 'paranoid' about AI?",
+    o:["Vera Jourová","Margrethe Vestager","Ursula von der Leyen","Thierry Breton"],
+    e:"This fits Mügge's finding that the EU embraces the global AI race." },
+  { t:"read", q:"What does 'citizen sovereignty' mean in Mügge's framework?",
+    o:["Controlling big tech rather than championing European tech companies","Letting each citizen vote on AI rules","Building European AI champions","Protecting national borders from AI"],
+    e:"Mügge says EU policy neglects this perspective. It matches the lecture's concern about incumbents' data and lobbying power." },
+  { t:"read", q:"Which 'global blind spots' does Mügge say EU policy largely ignores?",
+    o:["Energy use, critical minerals and outsourced content moderation","Privacy and data protection","Chatbot transparency","Competition among EU start-ups"],
+    e:"These are the extra-European costs of AI that a Euro-centric sovereignty agenda doesn't weigh." },
+  { t:"read", q:"According to Mügge, how does EU policy present AI?",
+    o:["As having only winners, which hides trade-offs","As a pure threat","As a military technology","As a passing fad"],
+    e:"He adds that vague 'sovereignty' rhetoric obscures political choices." },
+
+  // project
+  { t:"proj", q:"What does 'don't choose on the dependent variable' mean for the group project?",
+    o:["Pick your topic before knowing what your experiences will show","Choose a topic with no data","Only study variables you can control","Pick the topic with the most dramatic results"],
+    e:"Other criteria: something everyone experiences, narrow enough to document but broad enough to compare, comfortable to share, with literature and regulation to discuss." },
+  { t:"proj", q:"If your group's controversy is hot, what should you do?",
+    o:["Identify a cold controversy to compare it to, and test where the comparison breaks down","Switch to a cold topic","Ignore regulation entirely","Wait until it cools"],
+    e:"This applies the analogy strategy from the exercise class." },
+  { t:"proj", q:"Which is one of the key takeaways for the group project?",
+    o:["Notice what is missing from official documents","Only study controversies that are already regulated","Avoid looking at business models","Focus only on EU law"],
+    e:"The other takeaways: map winners, losers and those left out; ask if your topic is hot or cold; look at the business model." }
+];
+
+const CARDS = [
+  { t:"basics", f:"Controversy mapping", b:"A method for analysing a controversy: identify the issue, the actors, what they disagree about (the dispute), and what regulation each could accept." },
+  { t:"basics", f:"Utopian vs dystopian AI", b:"Utopian: Keynes's 15-hour week (1930), Srnicek & Williams's full automation + UBI. Dystopian: 42% of CEOs say AI could destroy humanity; >10% extinction estimate. Both are narratives that shape policy." },
+  { t:"basics", f:"'AI' as an umbrella term", b:"Covers generative AI, prediction & scoring, recommenders, computer vision, speech, optimisation, scientific AI, robotics, autonomous weapons, agents, algorithmic trading, and 'AI as a label' (often just statistics)." },
+  { t:"controv", f:"IP rights controversy", b:"AI is trained on music, art and text. Who is compensated? Artists and labels don't always share interests, since artists often don't own their work." },
+  { t:"controv", f:"Attention economy (chatbots)", b:"Chatbots earn money per token, so they gain from users who keep prompting: by being useful, flattering, or almost finishing tasks. Linked to 'AI psychosis'." },
+  { t:"controv", f:"Platform power", b:"Decades of user data make AI easier to build for incumbents (Google, Amazon, Facebook), who also lobby. New entrants may favour rules on unconsented training data." },
+  { t:"controv", f:"Content moderation", b:"Training AI relies on workers, often women in rural India, who watch hours of violent and abusive content." },
+  { t:"controv", f:"Hugging Face 'rogue agents' case", b:"Reports that OpenAI's agents compromised Hugging Face and leaked user images. Super-powerful AI, or a badly built sandbox spun into PR hype? Who is legally responsible?" },
+  { t:"biz", f:"Eisman's 'manufactured crisis'", b:"AI firms warning of doomsday lack a protective moat, so they may want regulation they can shape into a duopoly. Firms calling for a slowdown aren't postponing IPOs." },
+  { t:"biz", f:"Tokenomics", b:"Marginal cost logic (Citadel Securities): if the tokens for a task cost more than the labour, firms won't automate. Complex, token-hungry tasks can make humans cheaper." },
+  { t:"biz", f:"Market-creation phase", b:"Ship product & generate hype → grow market (cheap tokens) → capture market → fund the frontier → find a way to make profit. Ends in a profit squeeze or a bubble." },
+  { t:"biz", f:"Enshittification", b:"What users may face if an AI firm wins the market: ads, usage limits, higher prices, being nudged to spend more tokens." },
+  { t:"biz", f:"Solow's paradox (1987)", b:"'You can see computers everywhere except in the productivity statistics.' The same question now applies to AI." },
+  { t:"biz", f:"Creative destruction", b:"Joseph Schumpeter's idea that innovation destroys old jobs and industries while creating new ones, like 'vibe coding cleanup specialists'." },
+  { t:"reg", f:"'Pause Giant AI Experiments' letter (2023)", b:"Signed by Musk, Wozniak, Mostaque and 3,000+ others: develop powerful AI only once its effects are known to be positive. Through Eisman's lens it can also serve business interests." },
+  { t:"reg", f:"Soft law → hard rules", b:"2016–2020: reports, principles and guidelines (US report, China plan, OECD, EU ethics guidelines). From 2021: EU AI Act proposal, AI Liability Directive (2022), AI Act in force (Aug 2024)." },
+  { t:"reg", f:"EU AI Act: four risk tiers", b:"Unacceptable (banned: social scoring, manipulation) · High (strict requirements: hiring, credit, education, policing) · Limited (transparency: chatbots, deepfakes) · Minimal (none: spam filters, games)." },
+  { t:"reg", f:"Annex III (EU AI Act)", b:"The high-risk list: biometric identification, critical infrastructure, education, employment, public benefits, policing, migration, justice, credit scoring, insurance." },
+  { t:"reg", f:"Six rationales for regulating digital business", b:"Protect consumers · protect competition · correct information asymmetries · protect privacy & fundamental rights · prevent systemic risks · encourage innovation." },
+  { t:"hot", f:"Cold controversy", b:"Rules are established and it is clear where the issue is addressed: actors identified, interests stable, responsibilities accepted. E.g. nuclear arms." },
+  { t:"hot", f:"Hot controversy", b:"Everything is disputed: valid knowledge, frames of reference, relevant actors. We don't even know what to call the problem. E.g. frontier AI, rogue AI agents." },
+  { t:"hot", f:"Two strategies for regulating something hot", b:"1. Normalise it: fit AI into existing frames and institutions, leave contested issues out. 2. Find an analogy: compare it to a cold controversy and test where it breaks." },
+  { t:"hot", f:"Nuclear analogy: pros and cons", b:"Holds: cross-border harms, few capable actors, need for monitoring. Breaks: private firms, copyable software, everyday uses, nothing like counting warheads. Risk: feeds hype, locks in leading firms." },
+  { t:"read", f:"Liebig et al. (2024)", b:"German AI policy 2012–2021: AI framed as economic opportunity, funding the main tool, bans proposed only 4 times. Contested issues like autonomous weapons were 'covered', not closed." },
+  { t:"read", f:"'Controversies covered'", b:"Liebig et al.'s term for contested issues that are discussed but left out of final policy reports, so the controversy is hidden rather than resolved." },
+  { t:"read", f:"Mügge (2024): three axes of AI sovereignty", b:"Subject: jurisdictional ↔ citizen. Objective: boost competitiveness ↔ escape the AI race. Beneficiaries: Euro-centric ↔ global responsibility. EU policy sits at the first end of each." },
+  { t:"read", f:"Mügge: global blind spots", b:"Energy use, critical minerals and outsourced content moderation: extra-European costs that EU AI policy largely ignores." },
+  { t:"read", f:"AI Act negotiations (Mügge)", b:"France, Germany and Italy resisted strict foundation-model rules to protect Mistral and Aleph Alpha; Vera Jourová warned against being 'paranoid'." },
+  { t:"proj", f:"Choosing a group project topic", b:"Pick a part of digital life everyone experiences; decide before knowing results; narrow enough to document, broad enough to compare; comfortable to share; has literature and regulation." },
+  { t:"proj", f:"Four takeaways for the project", b:"Map winners, losers and those left out · ask if it's hot or cold (find a cold comparison) · look at the business model · notice what's missing from official documents." }
+];
+
+const ORDER_DRILLS = [
+  { id:"map", name:"Controversy mapping", desc:"The four questions, in sequence.",
+    ends:["First","Last"],
+    items:["Issue: what is the problem?","Actors: who is involved?","Dispute: where do they clash?","Regulation: what can each accept?"] },
+  { id:"scale", name:"Cold to hot", desc:"Rank the examples from Figure 8.",
+    ends:["Coldest","Hottest"],
+    items:["Nuclear arms","Computer viruses by email","Human hackers committing crime","Autonomous weapon systems","Rogue AI agents (Hugging Face)"] },
+  { id:"time", name:"Governance timeline", desc:"From soft law to hard rules.",
+    ends:["Earliest","Latest"],
+    items:["US (Obama) report on the future of AI · 2016","China: Next Generation AI Plan · 2017","EU Ethics Guidelines for Trustworthy AI · 2019","EU White Paper on AI · 2020","EU proposes the AI Act · 2021","EU proposes the AI Liability Directive · 2022","AI Act enters into force · 2024"],
+    strip:true },
+  { id:"market", name:"Market-creation logic", desc:"The steps in Figure 5.",
+    ends:["First step","Last step"],
+    items:["Ship product & generate hype","Grow market (free/cheap tokens)","Capture market (best model wins)","Fund the frontier (huge investment)","Find a way to make profit"] }
+];
+
+const TIERS = [
+  { id:"u", name:"Unacceptable", note:"Banned", c:"var(--hot)" },
+  { id:"h", name:"High risk", note:"Strict requirements", c:"var(--t-high)" },
+  { id:"l", name:"Limited risk", note:"Transparency duties", c:"var(--t-lim)" },
+  { id:"m", name:"Minimal risk", note:"No new obligations", c:"var(--t-min)" }
+];
+const SORT_ITEMS = [
+  ["Social scoring of citizens","u"],["Manipulative AI","u"],
+  ["AI screening job applicants","h"],["Credit scoring","h"],["Grading in education","h"],["Predictive policing tools","h"],
+  ["Biometric identification","h"],["Migration and border decisions","h"],["Access to public benefits","h"],["Critical infrastructure control","h"],["Insurance pricing","h"],["AI used in the justice system","h"],
+  ["Customer service chatbot","l"],["Deepfake video","l"],
+  ["Email spam filter","m"],["AI in a video game","m"]
+];
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+function fillTopics(sel, list) {
+  const counts = {}; list.forEach(x => counts[x.t] = (counts[x.t] || 0) + 1);
+  sel.innerHTML = `<option value="all">All topics (${list.length})</option>` +
+    Object.entries(TOPICS).map(([k, v]) => `<option value="${k}">${esc(v)} (${counts[k] || 0})</option>`).join("");
+}
+
+/* ---------- tabs ---------- */
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+let activeTab = "quiz";
+function showTab(id) {
+  activeTab = id;
+  tabs.forEach(t => { const on = t.getAttribute("aria-controls") === id; t.setAttribute("aria-selected", on); document.getElementById(t.getAttribute("aria-controls")).hidden = !on; });
+  store.set("aict.tab", id);
+}
+tabs.forEach(t => t.addEventListener("click", () => showTab(t.getAttribute("aria-controls"))));
+
+/* ---------- quiz ---------- */
+const quiz = { list: [], i: 0, score: 0, answered: false, missed: [] };
+fillTopics($("#quizTopic"), QUESTIONS);
+function startQuiz(fromList) {
+  const topic = $("#quizTopic").value, n = +$("#quizLen").value;
+  const pool = fromList || QUESTIONS.filter(q => topic === "all" || q.t === topic);
+  quiz.list = shuffle(pool).slice(0, fromList ? pool.length : n).map(q => ({ ...q, opts: shuffle(q.o) }));
+  quiz.i = 0; quiz.score = 0; quiz.missed = []; quiz.answered = false;
+  renderQ();
+}
+function renderQ() {
+  const box = $("#quizBox"), q = quiz.list[quiz.i], n = quiz.list.length;
+  if (!q) return renderQuizEnd();
+  box.innerHTML = `
+    <div class="meter">
+      <div class="row"><span class="label">Question ${quiz.i + 1} of ${n}</span><span class="label">Score ${quiz.score}</span></div>
+      <div class="track"><div class="fill" style="width:${(quiz.i / n) * 100}%"></div></div>
+    </div>
+    <span class="label">${esc(TOPICS[q.t])}</span>
+    <h2>${esc(q.q)}</h2>
+    <div class="opts">${q.opts.map((o, k) => `<button class="opt" data-k="${k}"><span class="key">${k + 1}</span><span>${esc(o)}</span></button>`).join("")}</div>
+    <div id="fb" hidden></div>
+    <div class="row end"><button class="btn primary" id="nextQ" disabled>${quiz.i + 1 === n ? "See results" : "Next question"}</button></div>`;
+  box.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => answer(+b.dataset.k)));
+  $("#nextQ").addEventListener("click", nextQ);
+  quiz.answered = false;
+}
+function answer(k) {
+  if (quiz.answered) return;
+  quiz.answered = true;
+  const q = quiz.list[quiz.i], correct = q.opts.indexOf(q.o[0]), ok = k === correct;
+  if (ok) quiz.score++; else quiz.missed.push(q);
+  document.querySelectorAll("#quizBox .opt").forEach((b, idx) => {
+    b.disabled = true;
+    if (idx === correct) b.classList.add("right"); else if (idx === k) b.classList.add("wrong");
+  });
+  const fb = $("#fb");
+  fb.className = "feedback" + (ok ? "" : " no");
+  fb.innerHTML = `<strong>${ok ? "Correct" : "Not quite. The answer is: " + esc(q.o[0])}</strong><p>${esc(q.e)}</p>`;
+  fb.hidden = false;
+  $(".meter .label:last-child").textContent = "Score " + quiz.score;
+  const nb = $("#nextQ"); nb.disabled = false; nb.focus();
+}
+function nextQ() { quiz.i++; renderQ(); }
+function renderQuizEnd() {
+  const n = quiz.list.length, pct = Math.round(quiz.score / n * 100);
+  const msg = pct === 100 ? "Perfect run." : pct >= 80 ? "Strong. Review the few you missed." : pct >= 50 ? "Getting there. Go over the misses below, then retry them." : "Worth another pass. Try the flashcards for this topic first.";
+  $("#quizBox").innerHTML = `
+    <span class="label">Result</span>
+    <div class="row" style="gap:18px;align-items:baseline"><span class="score">${quiz.score}/${n}</span><span class="muted">${pct}% · ${esc(msg)}</span></div>
+    <div class="row">
+      ${quiz.missed.length ? `<button class="btn primary" id="retryMissed">Retry the ${quiz.missed.length} I missed</button>` : ""}
+      <button class="btn" id="again">Start new quiz</button>
+    </div>
+    ${quiz.missed.length ? `<h3>Review</h3><ul class="review">${quiz.missed.map(q => `<li><span>${esc(q.q)}</span><span class="ans">${esc(q.o[0])}</span><span class="muted">${esc(q.e)}</span></li>`).join("")}</ul>` : ""}`;
+  const r = $("#retryMissed"); if (r) r.addEventListener("click", () => startQuiz(quiz.missed.map(({ opts, ...q }) => q)));
+  $("#again").addEventListener("click", () => startQuiz());
+}
+$("#quizNew").addEventListener("click", () => startQuiz());
+$("#quizTopic").addEventListener("change", () => startQuiz());
+$("#quizLen").addEventListener("change", () => startQuiz());
+
+/* ---------- flashcards ---------- */
+CARDS.forEach((c, i) => c.id = "c" + i);
+let known = new Set(store.get("aict.known", []));
+const deck = { queue: [], cur: null, flipped: false };
+fillTopics($("#cardTopic"), CARDS);
+function cardPool() { const t = $("#cardTopic").value; return CARDS.filter(c => t === "all" || c.t === t); }
+function buildDeck() { deck.queue = shuffle(cardPool().filter(c => !known.has(c.id))); nextCard(); }
+function nextCard() { deck.cur = deck.queue.shift() || null; deck.flipped = false; renderCard(); }
+function renderCard() {
+  const pool = cardPool(), k = pool.filter(c => known.has(c.id)).length;
+  $("#deckStats").innerHTML = `<span><b>${pool.length - k}</b><span class="muted">to learn</span></span><span><b>${k}</b><span class="muted">known</span></span>`;
+  const area = $("#cardArea");
+  if (!deck.cur) {
+    area.innerHTML = `<div class="panel"><span class="label">Deck complete</span><h2>You marked all ${pool.length} cards in this topic as known.</h2>
+      <div class="row"><button class="btn primary" id="resetDeck">Study these cards again</button></div></div>`;
+    $("#resetDeck").addEventListener("click", () => { pool.forEach(c => known.delete(c.id)); store.set("aict.known", [...known]); buildDeck(); });
+    return;
+  }
+  const c = deck.cur;
+  area.innerHTML = `
+    <div class="flash${deck.flipped ? " flipped" : ""}" id="flash" tabindex="0" role="button" aria-label="Flip card">
+      <div class="flash-inner">
+        <div class="face front"><span class="label">${esc(TOPICS[c.t])}</span><div class="term">${esc(c.f)}</div><span class="label hint">Tap to flip</span></div>
+        <div class="face back"><span class="label">${esc(c.f)}</span><p style="font-size:16.5px">${esc(c.b)}</p></div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:14px;justify-content:space-between">
+      <button class="btn" id="again">Still learning</button>
+      <button class="btn primary" id="gotIt">Got it</button>
+    </div>`;
+  const f = $("#flash");
+  f.addEventListener("click", flip);
+  $("#again").addEventListener("click", () => rate(false));
+  $("#gotIt").addEventListener("click", () => rate(true));
+  sizeCard();
+}
+function sizeCard() {
+  const inner = document.querySelector(".flash-inner"); if (!inner) return;
+  const h = Math.max(230, ...[...inner.querySelectorAll(".face")].map(f => f.scrollHeight));
+  inner.style.minHeight = h + "px";
+}
+function flip() { deck.flipped = !deck.flipped; $("#flash").classList.toggle("flipped", deck.flipped); }
+function rate(ok) {
+  if (!deck.cur) return;
+  if (ok) { known.add(deck.cur.id); store.set("aict.known", [...known]); }
+  else deck.queue.splice(Math.min(3, deck.queue.length), 0, deck.cur);
+  nextCard();
+}
+$("#cardTopic").addEventListener("change", buildDeck);
+window.addEventListener("resize", sizeCard);
+
+/* ---------- drills ---------- */
+let drill = null;
+function renderDrillList() {
+  const all = [...ORDER_DRILLS.map(d => ({ id: d.id, name: d.name, desc: d.desc })), { id: "tiers", name: "EU AI Act sorter", desc: "Put each use in its risk tier." }];
+  $("#drillList").innerHTML = all.map(d => `<button class="drill-pick" data-id="${d.id}" aria-pressed="${drill && drill.id === d.id}"><strong>${esc(d.name)}</strong><span class="muted">${esc(d.desc)}</span></button>`).join("");
+  document.querySelectorAll(".drill-pick").forEach(b => b.addEventListener("click", () => openDrill(b.dataset.id)));
+}
+function openDrill(id) {
+  if (id === "tiers") { drill = { id, kind: "tiers", items: shuffle(SORT_ITEMS), i: 0, score: 0, done: false }; }
+  else { const d = ORDER_DRILLS.find(x => x.id === id); drill = { id, kind: "order", def: d, pool: shuffle(d.items.map((txt, i) => ({ txt, i }))), placed: [], checked: false }; }
+  renderDrillList(); renderDrill();
+}
+function renderDrill() { drill.kind === "tiers" ? renderTiers() : renderOrder(); }
+
+function renderOrder() {
+  const d = drill.def, n = d.items.length, box = $("#drillBox");
+  const shown = x => d.strip ? x.txt.replace(/ · \d{4}$/, "") : x.txt;
+  const slots = Array.from({ length: n }, (_, k) => drill.placed[k]);
+  const allRight = drill.checked && slots.every((x, k) => x && x.i === k);
+  box.innerHTML = `
+    <div><span class="label">Put in order</span><h2 style="margin-top:4px">${esc(d.name)}</h2></div>
+    <p class="muted">Tap the items in order. Tap a placed item to send it back.</p>
+    <div class="chips" aria-label="Items to place">${drill.pool.map((x, k) => `<button class="chip" data-k="${k}">${esc(shown(x))}</button>`).join("") || `<span class="muted">All placed.</span>`}</div>
+    <div class="endcaps"><span class="label">↓ ${esc(d.ends[0])}</span></div>
+    <ol class="slots">${slots.map((x, k) => `<li><button class="slot${drill.checked && x ? (x.i === k ? " right" : " wrong") : ""}" data-k="${k}" ${x ? "" : "disabled"}>${x ? esc(drill.checked ? x.txt : shown(x)) : ""}</button></li>`).join("")}</ol>
+    <div class="endcaps"><span class="label">↑ ${esc(d.ends[1])}</span></div>
+    ${allRight ? `<div class="feedback"><strong>All in the right order.</strong></div>` : drill.checked ? `<div class="feedback no"><strong>${slots.filter((x, k) => x && x.i === k).length} of ${n} in the right place.</strong><p>Tap the red ones to send them back and try again, or show the answer.</p></div>` : ""}
+    <div class="row end">
+      <button class="btn" id="dReveal">Show answer</button>
+      <button class="btn" id="dReset">Shuffle</button>
+      <button class="btn primary" id="dCheck" ${drill.placed.length === n && !drill.checked ? "" : "disabled"}>Check order</button>
+    </div>`;
+  box.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { drill.placed.push(drill.pool.splice(+b.dataset.k, 1)[0]); drill.checked = false; renderOrder(); }));
+  box.querySelectorAll(".slot").forEach(b => b.addEventListener("click", () => {
+    const k = +b.dataset.k; if (!drill.placed[k]) return;
+    drill.pool.push(drill.placed.splice(k, 1)[0]); drill.checked = false; renderOrder();
+  }));
+  $("#dCheck").addEventListener("click", () => { drill.checked = true; renderOrder(); });
+  $("#dReset").addEventListener("click", () => openDrill(drill.id));
+  $("#dReveal").addEventListener("click", () => { drill.placed = d.items.map((txt, i) => ({ txt, i })); drill.pool = []; drill.checked = true; renderOrder(); });
+}
+
+function renderTiers() {
+  const box = $("#drillBox"), n = drill.items.length;
+  if (drill.i >= n) {
+    box.innerHTML = `<span class="label">EU AI Act sorter · result</span>
+      <div class="row" style="gap:18px;align-items:baseline"><span class="score">${drill.score}/${n}</span><span class="muted">sorted into the right tier</span></div>
+      <div class="row"><button class="btn primary" id="tAgain">Sort again</button></div>`;
+    $("#tAgain").addEventListener("click", () => openDrill("tiers"));
+    return;
+  }
+  const [item, tier] = drill.items[drill.i];
+  box.innerHTML = `
+    <div class="meter">
+      <div class="row"><span class="label">EU AI Act sorter · ${drill.i + 1} of ${n}</span><span class="label">Score ${drill.score}</span></div>
+      <div class="track"><div class="fill" style="width:${drill.i / n * 100}%"></div></div>
+    </div>
+    <p class="muted">Which risk tier does this use fall into?</p>
+    <div class="sort-item">${esc(item)}</div>
+    <div class="tiers">${TIERS.map((t, k) => `<button class="tier" data-id="${t.id}" style="--c:${t.c}"><strong>${esc(t.name)}</strong><span class="muted">${esc(t.note)}</span></button>`).join("")}</div>
+    <div id="tfb" hidden></div>
+    <div class="row end"><button class="btn primary" id="tNext" disabled>Next</button></div>`;
+  box.querySelectorAll(".tier").forEach(b => b.addEventListener("click", () => {
+    if (drill.done) return; drill.done = true;
+    const ok = b.dataset.id === tier; if (ok) drill.score++;
+    box.querySelectorAll(".tier").forEach(x => { x.disabled = true; if (x.dataset.id === tier) x.classList.add("right"); else if (x === b) x.classList.add("wrong"); });
+    const fb = $("#tfb"), right = TIERS.find(t => t.id === tier);
+    fb.className = "feedback" + (ok ? "" : " no"); fb.hidden = false;
+    fb.innerHTML = `<strong>${ok ? "Correct" : "It's " + esc(right.name)}.</strong><p>${esc(right.name)}: ${esc(right.note.toLowerCase())}.${tier === "h" ? " It's on the Annex III high-risk list." : ""}</p>`;
+    const nx = $("#tNext"); nx.disabled = false; nx.focus();
+  }));
+  $("#tNext").addEventListener("click", () => { drill.i++; drill.done = false; renderTiers(); });
+}
+
+/* ---------- keyboard ---------- */
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "SELECT" || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (activeTab === "quiz") {
+    const n = parseInt(e.key, 10);
+    if (n >= 1 && n <= 4 && !quiz.answered && quiz.list[quiz.i]) { answer(n - 1); e.preventDefault(); }
+  } else if (activeTab === "cards" && deck.cur) {
+    if (e.key === " " || e.key === "Enter") { if (e.target.tagName === "BUTTON" && e.target.id !== "flash") return; flip(); e.preventDefault(); }
+    else if (e.key === "ArrowRight") rate(true);
+    else if (e.key === "ArrowLeft") rate(false);
+  }
+});
+
+/* ---------- boot ---------- */
+startQuiz();
+buildDeck();
+renderDrillList();
+openDrill("tiers");
+const savedTab = store.get("aict.tab", "quiz");
+showTab(["quiz", "cards", "drills"].includes(savedTab) ? savedTab : "quiz");
+</script>
+</body>
+</html>
