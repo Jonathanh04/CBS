@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CBS Talks Partnership Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: navy brand bar with logo, tab row, one working view at a time; company details open in a side drawer. */
+:root {
+  --brand: #1b2a53;        /* CBS Talks navy, sampled from the logo */
+  --brand-2: #24376b;
+  --bg: #f3f4f8;
+  --surface: #ffffff;
+  --surface-2: #eef0f6;
+  --ink: #131a2e;
+  --muted: #5b6380;
+  --line: #dde1ec;
+  --primary: #1b2a53;
+  --primary-ink: #ffffff;
+  --gold: #e9a93a;
+  --soft: #e3e8f5;
+  --good: #0ca30c;
+  --warn: #fab219;
+  --crit: #d03b3b;
+  --crit-ink: #b42f2f;
+  --q-priority: #1b2a53;
+  --q-path: #3d5aa8;
+  --q-quick: #138a62;
+  --q-low: #8a90a3;
+  --bar: #2a78d6;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  --radius: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1226; --surface: #141c36; --surface-2: #1b2544; --ink: #eef1f8; --muted: #a6aec7; --line: #2a3558;
+    --primary: #e9a93a; --primary-ink: #141c36; --soft: #22305a; --crit-ink: #f08a8a;
+    --q-priority: #8fa8ec; --q-path: #6f8ad6; --q-quick: #3cc493; --q-low: #8a90a3; --bar: #3987e5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1226; --surface: #141c36; --surface-2: #1b2544; --ink: #eef1f8; --muted: #a6aec7; --line: #2a3558;
+  --primary: #e9a93a; --primary-ink: #141c36; --soft: #22305a; --crit-ink: #f08a8a;
+  --q-priority: #8fa8ec; --q-path: #6f8ad6; --q-quick: #3cc493; --q-low: #8a90a3; --bar: #3987e5;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45; }
+button, input, select, textarea { font: inherit; color: inherit; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* brand bar */
+.brandbar { background: var(--brand); color: #fff; padding-top: env(safe-area-inset-top, 0px); }
+.brandbar-inner { max-width: 1240px; margin: 0 auto; padding-inline: 16px; padding-block: 12px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.brandbar img { width: 64px; height: 64px; display: block; border-radius: 4px; }
+.brand-title { display: grid; gap: 1px; }
+.brand-title h1 { font-size: 1.3rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; }
+.brand-title span { font-size: 0.85rem; color: #c9d1ea; }
+.brand-right { margin-left: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.demo-chip { border: 1px dashed #9fb0dd; color: #dfe5f6; border-radius: 999px; padding: 3px 10px; font-size: 0.78rem; font-weight: 600; }
+.btn-ghost-light { background: transparent; border: 1px solid #5a6ea6; color: #fff; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+.btn-ghost-light:hover { background: var(--brand-2); }
+
+/* tabs */
+.tabs { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; }
+.tabs-inner { max-width: 1240px; margin: 0 auto; padding-inline: 16px; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.tab { background: none; border: 0; border-bottom: 3px solid transparent; padding: 12px 12px 10px; cursor: pointer; font-weight: 600; color: var(--muted); white-space: nowrap; display: inline-flex; gap: 6px; align-items: center; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--gold); }
+.tab .count { background: var(--soft); color: var(--ink); border-radius: 999px; padding: 0 7px; font-size: 0.75rem; font-weight: 700; }
+.tab .count.alert { background: var(--crit); color: #fff; }
+
+main { max-width: 1240px; margin: 0 auto; padding-inline: 16px; padding-block: 22px 60px; display: grid; gap: 18px; }
+.view-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.view-head h2 { font-size: 1.55rem; font-weight: 800; }
+.view-head p { margin: 4px 0 0; color: var(--muted); max-width: 70ch; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.section { padding: 16px; display: grid; gap: 10px; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.section-head h3 { font-size: 1.02rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.step { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--brand); color: #fff; font-size: 0.78rem; font-family: var(--font-display); }
+:root[data-theme="dark"] .step { background: var(--gold); color: var(--brand); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .step { background: var(--gold); color: var(--brand); } }
+
+/* queue rows */
+.qrow { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr) auto; gap: 14px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+.qrow:first-of-type { border-top: 0; }
+.qrow .co { font-weight: 700; cursor: pointer; background: none; border: 0; padding: 0; text-align: left; }
+.qrow .co:hover { text-decoration: underline; }
+.qrow .meta { color: var(--muted); font-size: 0.85rem; }
+.qrow .actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
+.empty { color: var(--muted); padding: 6px 0; }
+@media (max-width: 720px) { .qrow { grid-template-columns: minmax(0, 1fr); gap: 6px; } .qrow .actions { justify-content: flex-start; } }
+
+.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2px 9px; font-size: 0.76rem; font-weight: 700; white-space: nowrap; border: 1px solid transparent; }
+.pill .ic { font-weight: 800; }
+.pill.crit { background: color-mix(in srgb, var(--crit) 14%, transparent); color: var(--crit-ink); }
+.pill.warn { background: color-mix(in srgb, var(--warn) 26%, transparent); color: var(--ink); }
+.pill.info { background: var(--soft); color: var(--ink); }
+.pill.good { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--ink); }
+.qpill { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700; border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
+.qpill::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: currentColor; }
+.qpill.Priority { color: var(--q-priority); background: color-mix(in srgb, var(--q-priority) 12%, transparent); }
+.qpill.Build { color: var(--q-path); background: color-mix(in srgb, var(--q-path) 12%, transparent); }
+.qpill.Quick { color: var(--q-quick); background: color-mix(in srgb, var(--q-quick) 12%, transparent); }
+.qpill.Low, .qpill.Research { color: var(--q-low); background: color-mix(in srgb, var(--q-low) 14%, transparent); }
+
+.btn { border-radius: 8px; padding: 7px 13px; font-weight: 700; font-size: 0.86rem; cursor: pointer; border: 1px solid var(--line); background: var(--surface); }
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--primary); color: var(--primary-ink); border-color: var(--primary); }
+.btn.primary:hover { filter: brightness(1.12); }
+.btn.small { padding: 4px 10px; font-size: 0.8rem; }
+
+/* fit + access mini displays */
+.fitbar { display: inline-flex; align-items: center; gap: 8px; }
+.fitbar .track { width: 70px; height: 7px; background: var(--soft); border-radius: 4px; overflow: hidden; }
+.fitbar .fill { height: 100%; background: var(--brand); border-radius: 4px; }
+:root[data-theme="dark"] .fitbar .fill { background: var(--gold); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .fitbar .fill { background: var(--gold); } }
+.ladder { display: inline-flex; gap: 3px; vertical-align: middle; }
+.ladder i { width: 9px; height: 9px; border-radius: 2px; background: var(--soft); }
+.ladder i.on { background: var(--q-quick); }
+
+/* matrix */
+.matrix { display: grid; grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto auto; gap: 12px; }
+.axis-y { grid-row: 1 / 3; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; transform: rotate(180deg); color: var(--muted); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.axis-x { grid-column: 2 / 4; display: flex; justify-content: space-between; color: var(--muted); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0 6px; }
+.quad { border-radius: var(--radius); padding: 14px; display: grid; gap: 10px; align-content: start; min-height: 190px; border: 1px solid var(--line); background: var(--surface); }
+.quad h3 { font-size: 1.05rem; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.quad .rule { color: var(--muted); font-size: 0.82rem; }
+.quad.Priority { border-top: 4px solid var(--q-priority); }
+.quad.Build { border-top: 4px solid var(--q-path); }
+.quad.Quick { border-top: 4px solid var(--q-quick); }
+.quad.Low { border-top: 4px solid var(--q-low); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 6px 10px; cursor: pointer; font-weight: 600; font-size: 0.88rem; }
+.chip:hover { border-color: var(--muted); }
+.chip .sc { color: var(--muted); font-weight: 600; font-size: 0.78rem; }
+@media (max-width: 720px) { .matrix { grid-template-columns: minmax(0, 1fr); } .axis-y, .axis-x { display: none; } }
+
+/* companies table */
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.search { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 12px; min-width: 220px; flex: 1 1 220px; max-width: 360px; }
+.filter { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-weight: 600; font-size: 0.84rem; }
+.filter[aria-pressed="true"] { background: var(--brand); color: #fff; border-color: var(--brand); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tbody tr { cursor: pointer; }
+tbody tr:hover td { background: var(--surface-2); }
+
+/* pipeline */
+.board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+.col { background: var(--surface-2); border-radius: var(--radius); padding: 10px; display: grid; gap: 8px; align-content: start; min-height: 220px; }
+.col h3 { font-size: 0.9rem; display: flex; justify-content: space-between; padding: 2px 4px 4px; }
+.deal { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 6px; }
+.deal .t { font-weight: 700; cursor: pointer; background: none; border: 0; padding: 0; text-align: left; }
+.deal .t:hover { text-decoration: underline; }
+.deal select { border: 1px solid var(--line); border-radius: 6px; background: var(--surface); padding: 4px 6px; font-size: 0.82rem; }
+
+/* dashboard */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.kpi { padding: 16px; display: grid; gap: 6px; }
+.kpi .label { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; }
+.kpi .value { font-family: var(--font-display); font-size: 1.7rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.meter { height: 8px; background: var(--soft); border-radius: 4px; overflow: hidden; }
+.meter span { display: block; height: 100%; background: var(--gold); border-radius: 4px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.bars { display: grid; gap: 8px; }
+.barrow { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 0.88rem; }
+.barrow .tr { position: relative; height: 18px; }
+.barrow .b { height: 18px; background: var(--bar); border-radius: 0 4px 4px 0; min-width: 2px; }
+.barrow .b.zero { background: var(--line); }
+.barrow .v { position: absolute; top: 0; line-height: 18px; padding-left: 6px; font-size: 0.8rem; font-weight: 700; }
+.list { display: grid; }
+.li { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+.li:first-child { border-top: 0; }
+
+/* drawer */
+.scrim { position: fixed; inset: 0; background: rgb(8 12 28 / 0.45); z-index: 40; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(620px, 100%); background: var(--bg); z-index: 50; overflow-y: auto; box-shadow: -12px 0 30px rgb(0 0 0 / 0.18); padding-top: env(safe-area-inset-top, 0px); }
+.drawer-head { background: var(--brand); color: #fff; padding: 18px 20px; display: grid; gap: 8px; position: sticky; top: 0; z-index: 2; }
+.drawer-head .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.drawer-head h2 { font-size: 1.4rem; font-weight: 800; }
+.drawer-head .sub { color: #c9d1ea; font-size: 0.88rem; }
+.drawer-head .scores { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+.drawer-head .big { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; }
+.drawer-head .big small { font-size: 0.85rem; font-weight: 600; color: #c9d1ea; }
+.drawer-head .qtag { background: #fff; color: var(--brand); border-radius: 6px; padding: 3px 9px; font-weight: 800; font-size: 0.8rem; }
+.close { background: transparent; border: 1px solid #5a6ea6; color: #fff; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; font-size: 1.1rem; flex: none; }
+.drawer-body { padding: 16px; display: grid; gap: 14px; }
+.suggest { border-left: 4px solid var(--gold); background: var(--surface); border-radius: 8px; padding: 12px 14px; display: grid; gap: 4px; }
+.suggest .k { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; }
+.fitrow { display: grid; grid-template-columns: 150px auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 9px 0; border-top: 1px solid var(--line); }
+.fitrow:first-of-type { border-top: 0; }
+.fitrow .name { font-weight: 700; font-size: 0.9rem; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); width: 30px; height: 28px; cursor: pointer; font-weight: 700; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--brand); color: #fff; }
+.seg.locked button { cursor: default; }
+.reason { font-size: 0.86rem; }
+.src { font-size: 0.78rem; color: var(--muted); }
+.warnline { color: var(--crit-ink); font-size: 0.78rem; font-weight: 700; }
+@media (max-width: 560px) { .fitrow { grid-template-columns: minmax(0, 1fr) auto; } .fitrow .reason { grid-column: 1 / -1; } }
+.access-ladder { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.rung { border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 0.78rem; display: grid; gap: 2px; background: var(--surface); }
+.rung b { font-family: var(--font-display); font-size: 1rem; }
+.rung.on { background: color-mix(in srgb, var(--q-quick) 14%, var(--surface)); border-color: var(--q-quick); }
+.rung.current { outline: 2px solid var(--q-quick); }
+@media (max-width: 520px) { .access-ladder { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.label-v, .label-i, .label-u { font-size: 0.7rem; font-weight: 800; border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+.label-v { background: var(--brand); color: #fff; }
+.label-i { border: 1px solid var(--brand); color: var(--ink); }
+.label-u { border: 1px dashed var(--muted); color: var(--muted); }
+:root[data-theme="dark"] .seg button[aria-pressed="true"], :root[data-theme="dark"] .filter[aria-pressed="true"] { background: var(--gold); color: var(--brand); border-color: var(--gold); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-pressed="true"], :root:not([data-theme="light"]) .filter[aria-pressed="true"] { background: var(--gold); color: var(--brand); border-color: var(--gold); } }
+:root[data-theme="dark"] .label-v { background: var(--gold); color: var(--brand); }
+:root[data-theme="dark"] .label-i { border-color: var(--gold); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .label-v { background: var(--gold); color: var(--brand); } :root:not([data-theme="light"]) .label-i { border-color: var(--gold); } }
+.evi { display: grid; gap: 3px; padding: 9px 0; border-top: 1px solid var(--line); }
+.evi:first-child { border-top: 0; }
+.evi .top { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.evi.inference .stmt { font-style: italic; }
+.timeline { display: grid; }
+.tl { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 0.88rem; }
+.tl:first-child { border-top: 0; }
+
+/* modal + toast */
+.modal { position: fixed; inset: 0; display: grid; place-items: center; z-index: 70; padding: 16px; }
+.modal .scrim { z-index: 1; }
+.modal .box { position: relative; z-index: 2; background: var(--surface); border-radius: 12px; width: min(480px, 100%); padding: 20px; display: grid; gap: 12px; box-shadow: 0 20px 50px rgb(0 0 0 / 0.3); max-height: 90vh; overflow-y: auto; }
+.modal h3 { font-size: 1.15rem; }
+.field { display: grid; gap: 4px; font-size: 0.85rem; font-weight: 600; }
+.field input, .field select, .field textarea { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--surface); font-weight: 400; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal .btns { display: flex; justify-content: flex-end; gap: 8px; }
+.err { color: var(--crit-ink); font-size: 0.85rem; font-weight: 600; }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-weight: 600; z-index: 80; box-shadow: 0 8px 20px rgb(0 0 0 / 0.25); max-width: calc(100% - 32px); }
+footer { max-width: 1240px; margin: 0 auto; padding-inline: 16px; padding-block: 0 30px; color: var(--muted); font-size: 0.8rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .drawer { animation: slide 0.18s ease-out; }
+  @keyframes slide { from { transform: translateX(24px); opacity: 0.6; } to { transform: none; opacity: 1; } }
+  .fitbar .fill, .meter span, .barrow .b { transition: width 0.25s ease; }
+}
+</style>
+</head>
+<body>
+<header class="brandbar">
+  <div class="brandbar-inner">
+    <img src="data:image/jpeg;base64,__LOGO__" alt="CBS Talks logo">
+    <div class="brand-title">
+      <h1>Partnership Desk</h1>
+      <span id="semester-line"></span>
+    </div>
+    <div class="brand-right">
+      <span class="demo-chip">Demo · fictional companies and people</span>
+      <button class="btn-ghost-light" id="reset">Reset demo</button>
+    </div>
+  </div>
+</header>
+<nav class="tabs" aria-label="Views">
+  <div class="tabs-inner" role="tablist" id="tabs"></div>
+</nav>
+<main id="view"></main>
+<footer>Prototype of the CBS Talks lean partnership specification. Two scores only: Fit (0–10) and Access (0–4). No budget estimates. Nothing you change here is saved.</footer>
+<div id="overlay"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+/* ---------- dates ---------- */
+const TODAY = new Date(); TODAY.setHours(0, 0, 0, 0);
+const D = n => { const d = new Date(TODAY); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+const parse = s => new Date(s + "T00:00:00");
+const days = (a, b) => Math.round((parse(b) - parse(a)) / 86400000);
+const todayIso = () => TODAY.toISOString().slice(0, 10);
+const fmt = s => s ? parse(s).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "—";
+const fmtY = s => s ? parse(s).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";
+const dkk = n => n == null || n === "" ? "—" : Number(n).toLocaleString("da-DK") + " DKK";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* ---------- settings (from the lean spec) ---------- */
+const SET = { fitHigh: 6, accessHigh: 2, pathCap: 5, renewalDays: 90, noReplyDays: 10, warmDays: 365,
+  semester: { name: "Demo semester", start: D(-60), end: D(120), target: 120000 } };
+const STAGES = ["Planned", "Contacted", "Meeting", "Proposal sent", "Negotiation", "Won", "Lost", "Nurture"];
+const OPEN = ["Planned", "Contacted", "Meeting", "Proposal sent", "Negotiation"];
+const LOST_REASONS = ["No budget", "Chose another organisation", "Not relevant for them", "Bad timing", "No response", "Terms not agreed", "We withdrew", "Other"];
+const ACCESS_NAMES = ["No path", "Named person", "Introduction available", "Warm contact", "Champion / satisfied past partner"];
+const NOT_SUITABLE = ["Executive assistant (routing only)", "Other"];
+const PACKAGES = [{ name: "Entry package", price: 8000 }, { name: "Standard package", price: 20000 }, { name: "Strategic package", price: 45000 }];
+const TEAM = [{ name: "A.K.", role: "Partnerships Manager", active: true }, { name: "J.H.", role: "Partnerships Associate", active: true },
+  { name: "M.S.", role: "Partnerships Associate", active: true }, { name: "L.M.", role: "Former board member", active: false }];
+
+/* ---------- fictional seed data ---------- */
+function seed() {
+  const companies = [
+    { id: "proserv", name: "ProServ", industry: "Professional services & consulting", size: "1000+", owner: "J.H.",
+      fit: { f1: [2, "180 attended our event with them last year", "CBS Talks event data"], f2: [2, "Partner on stage for the 'Work after AI' series", "Talk recording"], f3: [2, "Graduate programme with recurring hiring", "Careers page"], f5: [2, "Partnered two years running", "Our records"] },
+      intro: "", need: "", path: null,
+      commercial: [{ type: "Previous CBS Talks spend", desc: "Paid for the event series last year", amount: 40000, year: "2025" }, { type: "Sponsors student organisations", desc: "Partner of a CBS case competition", src: "example.org/partners" }],
+      contacts: [{ name: "Sofie L.", title: "Head of Employer Branding", role: "Employer branding", rel: "Champion", alumni: "Yes", source: "Last year's partnership", verified: D(-20) }],
+      evidence: [{ crit: "F3", text: "Graduate programme lists 25 business roles for 2027", label: "Verified fact", src: "example.org/proserv-careers" }] },
+    { id: "megabrand", name: "MegaBrand A/S", industry: "Consumer goods & retail", size: "1000+", owner: "M.S.",
+      fit: { f1: [2, "Top result in our September audience poll", "Poll results"], f2: [1, "Relevant topic, no named speaker yet", ""], f3: [1, "Hires business graduates, already well known", ""], f5: [1, "Could repeat", ""] },
+      intro: "", need: "", path: { action: "Ask the board's alumni network for an introduction", started: D(-25) },
+      commercial: [{ type: "Sponsors student organisations", desc: "Main partner of two CBS student organisations", src: "example.org/partners" }],
+      contacts: [{ name: "Peter N.", title: "University Relations Manager", role: "University relations", rel: "Named", alumni: "Unknown", source: "LinkedIn", verified: D(-30) }],
+      evidence: [{ crit: "F2", text: "CEO spoke about AI and work at a conference", label: "Verified fact", src: "example.org/talk", ai: true, checked: false }] },
+    { id: "nordlys", name: "Nordlys Logistics", industry: "Shipping, logistics & transport", size: "250-999", owner: "A.K.",
+      fit: { f1: [1, "Relevant to supply-chain students", ""], f2: [1, "Supply-chain topic, no named speaker yet", ""], f3: [2, "About 20 graduate postings this year", "Jobs page"], f5: [2, "Annual graduate programme", "Careers page"] },
+      intro: "CBS alumnus in their talent team, via A.K. (agreed to introduce)", need: "", path: null,
+      commercial: [{ type: "None found (checked)", desc: "Checked partner pages of 12 CBS student organisations and their news page" }],
+      contacts: [{ name: "Mette R.", title: "Talent Acquisition Manager", role: "Talent acquisition", rel: "Named", alumni: "No", source: "Company team page", verified: D(-15) }],
+      evidence: [
+        { crit: "F3", text: "About 20 graduate postings for business profiles this year", label: "Verified fact", src: "example.org/nordlys-jobs" },
+        { crit: "F5", text: "Recurring graduate hiring each year", label: "Source-backed inference", reasoning: "An annual graduate programme implies a recurring hiring need", src: "example.org/nordlys-graduates" },
+        { crit: "General", text: "Who decides on student partnerships?", label: "Unknown" }] },
+    { id: "fjord", name: "Fjord Ventures", industry: "Investors & startup ecosystem", size: "<50", owner: "A.K.",
+      fit: { f1: [1, "Some interest among entrepreneurship students", ""], f2: [2, "Founder has recorded keynotes on fintech", "Talk recording"], f3: [1, "Wants visibility for the founder's agenda", ""], f5: [1, "Could repeat", ""] },
+      intro: "", need: "Speaker for the spring keynote", path: null,
+      commercial: [{ type: "None found (checked)", desc: "Checked student organisation partner pages and LinkedIn" }],
+      contacts: [{ name: "Emil B.", title: "Founder & CEO", role: "Founder / CEO (small company)", rel: "Champion", alumni: "No", source: "Met at our event", verified: D(-10) }],
+      evidence: [] },
+    { id: "kobber", name: "Kobber Hotels", industry: "Hospitality, food & venues", size: "50-249", owner: "L.M.",
+      fit: { f1: [0, "No sign students care about the brand", ""], f2: [0, "No link to our themes", ""], f3: [1, "Interested in local visibility", ""], f5: [1, "Could host again", ""] },
+      intro: "", need: "Venue for an autumn event", path: null,
+      commercial: [{ type: "Sponsors similar events", desc: "Hosts local business network events", src: "example.org/kobber-events" }],
+      contacts: [{ name: "Ida K.", title: "Marketing Manager", role: "Marketing", rel: "Named", alumni: "Unknown", source: "Introduced at a fair", verified: D(-200) }],
+      evidence: [] },
+    { id: "ravn", name: "Ravn Advisory", industry: "Professional services & consulting", size: "50-249", owner: "J.H.",
+      fit: { f1: [2, "Strategy students asked for them in our poll", "Poll results"], f2: [2, "Partner wrote a book on boards and AI", "Publisher page"], f3: [2, "Hiring analysts from CBS every year", "Careers page"], f5: [1, "Could repeat", ""] },
+      intro: "", need: "", path: null,
+      commercial: [{ type: "Sponsors university activities", desc: "Exhibitor at the CBS career fair", src: "example.org/careerfair" }],
+      contacts: [{ name: "Lukas T.", title: "Head of Marketing", role: "Marketing", rel: "Named", alumni: "Yes", source: "LinkedIn", verified: D(-14) }],
+      evidence: [] },
+    { id: "bolge", name: "Bølge Media", industry: "Media, marketing & communications", size: "50-249", owner: "M.S.",
+      fit: { f1: [1, "Some interest among communication students", ""], f2: [2, "Runs a podcast on work and technology", "Podcast page"], f3: [1, "Wants content partners", ""], f5: [1, "Could repeat", ""] },
+      intro: "", need: "Podcast partner for the AI series", path: null,
+      commercial: [{ type: "None found (checked)", desc: "Checked partner pages and LinkedIn" }],
+      contacts: [{ name: "Nora V.", title: "Head of Content", role: "Communications", rel: "Named", alumni: "No", source: "Podcast credits", verified: D(-5) }],
+      evidence: [] },
+    { id: "lindholm", name: "Lindholm Analytics", industry: "Technology & software", size: "250-999", owner: "A.K.",
+      fit: { f1: [1, "Relevant to business analytics students", ""], f2: [2, "Chief economist publishes a monthly labour-market index", "Index page"], f3: [1, "Some hiring of analysts", ""], f5: [2, "Index is published every month", "Index page"] },
+      intro: "", need: "", path: null,
+      commercial: [{ type: "Sponsors university activities", desc: "Sponsors a data hackathon at another university", src: "example.org/hackathon" }],
+      contacts: [], evidence: [] },
+    { id: "soby", name: "Søby Foods", industry: "Consumer goods & retail", size: "250-999", owner: "J.H.",
+      fit: { f1: [1, "Moderate interest", ""], f2: [1, "Sustainability topic, no speaker yet", ""], f3: [1, "Some marketing trainee hiring", ""], f5: [1, "Could repeat", ""] },
+      intro: "", need: "", path: null,
+      commercial: [{ type: "Previous CBS Talks spend", desc: "Entry package for one event this semester", amount: 8000, year: "2026" }],
+      contacts: [{ name: "Karen H.", title: "Marketing Manager", role: "Marketing", rel: "Named", alumni: "No", source: "Our records", verified: D(-45) }],
+      evidence: [] },
+    { id: "strandvej", name: "Strandvej Studio", industry: "Media, marketing & communications", size: "<50", owner: "M.S.",
+      fit: { f1: [1, "Some interest", ""], f2: [1, "Design topic", ""], f3: [0, "Checked: no hiring of business profiles", ""], f5: [0, "One-off", ""] },
+      intro: "", need: "", path: null,
+      commercial: [{ type: "Sponsors similar events", desc: "Sponsored a design festival", src: "example.org/festival" }],
+      contacts: [{ name: "Jonas P.", title: "Owner", role: "Founder / CEO (small company)", rel: "Named", alumni: "No", source: "Website", verified: D(-40) }],
+      evidence: [] },
+    { id: "tarnby", name: "Tårnby Systems", industry: "Technology & software", size: "250-999", owner: "A.K.",
+      fit: { f1: [1, "Some interest", ""], f2: [2, "CTO talks about cybersecurity for boards", "Conference programme"], f3: [1, "Some hiring", ""], f5: [1, "Could repeat", ""] },
+      intro: "", need: "", path: null,
+      commercial: [{ type: "None found (checked)", desc: "Checked partner pages" }],
+      contacts: [{ name: "Henrik S.", title: "CTO", role: "Subject-matter expert / speaker", rel: "Named", alumni: "No", source: "Conference programme", verified: D(-70) }],
+      evidence: [] },
+    { id: "havbrug", name: "Havbrug Energy", industry: "Energy & utilities", size: "50-249", owner: "M.S.",
+      fit: { f1: [1, "Some interest among sustainability students", ""], f2: [0, "No link to current themes", ""], f3: [1, "Occasional hiring", ""], f5: [1, "Could repeat", ""] },
+      intro: "", need: "", path: null,
+      commercial: [{ type: "None found (checked)", desc: "Checked partner pages" }], contacts: [], evidence: [] },
+    { id: "gamma", name: "Gamma Software", industry: "Technology & software", size: "50-249", owner: "M.S.",
+      fit: { f1: [0, "Checked: no student interest found", ""], f2: [0, "No link to our themes", ""], f3: [0, "No business-graduate hiring found", ""], f5: [0, "No recurring reason", ""] },
+      intro: "", need: "", path: null,
+      commercial: [{ type: "None found (checked)", desc: "Checked partner pages and their website" }], contacts: [], evidence: [] },
+    { id: "vesterled", name: "Vesterled Insurance", industry: "Finance, banking & insurance", size: "1000+", owner: "J.H.",
+      fit: { f1: [2, "Finance students asked for them in our poll", "Poll results"], f2: [null, "", ""], f3: [null, "", ""], f5: [null, "", ""] },
+      intro: "", need: "", path: null, commercial: [], contacts: [], evidence: [] },
+  ];
+  const opps = [
+    { id: 1, co: "proserv", type: "Recurring sponsor", stage: "Won", owner: "J.H.", contact: "Sofie L.", kind: "Cash", pkg: "Strategic package", proposed: 40000, agreed: 40000, end: D(60), renewalDate: D(30), satisfaction: "Satisfied", closed: D(-300), next: "", due: "" },
+    { id: 2, co: "megabrand", type: "Recruitment", stage: "Contacted", owner: "M.S.", contact: "Peter N.", kind: "Cash", next: "Second follow-up email", due: D(-3) },
+    { id: 3, co: "fjord", type: "Speaker", stage: "Meeting", owner: "A.K.", contact: "Emil B.", kind: "Non-cash", noncash: "1 keynote", next: "Meeting: confirm keynote date", due: D(4) },
+    { id: 4, co: "kobber", type: "In-kind", stage: "Proposal sent", owner: "L.M.", contact: "Ida K.", kind: "In-kind", noncash: "Venue and catering for one evening", next: "Check venue availability", due: D(6) },
+    { id: 5, co: "ravn", type: "Event sponsor", stage: "Proposal sent", owner: "J.H.", contact: "Lukas T.", kind: "Cash", pkg: "Standard package", proposed: 20000, next: "Follow-up call on the proposal", due: D(1) },
+    { id: 6, co: "bolge", type: "Content", stage: "Planned", owner: "M.S.", contact: "Nora V.", kind: "Non-cash", noncash: "Podcast series, 4 episodes", next: "Send the podcast format idea", due: D(2) },
+    { id: 7, co: "soby", type: "Event sponsor", stage: "Won", owner: "J.H.", contact: "Karen H.", kind: "Cash", pkg: "Entry package", proposed: 8000, agreed: 8000, end: D(-29), renewalDate: D(300), satisfaction: "Unknown", closed: D(-40), next: "", due: "" },
+    { id: 8, co: "strandvej", type: "Event sponsor", stage: "Lost", owner: "M.S.", contact: "Jonas P.", kind: "Cash", pkg: "Entry package", proposed: 8000, lost: "No budget", closed: D(-25), next: "", due: "" },
+    { id: 9, co: "tarnby", type: "Speaker", stage: "Nurture", owner: "A.K.", contact: "Henrik S.", kind: "Non-cash", noncash: "1 talk", nurture: "CTO on leave until spring", nurtureUntil: D(110), next: "Revisit when the CTO is back", due: D(110) },
+  ];
+  const interactions = [
+    { date: D(-20), co: "proserv", contact: "Sofie L.", by: "J.H.", channel: "Meeting", dir: "Two-way", summary: "Review of last year's series: they were happy with turnout", outcome: "Positive" },
+    { date: D(-17), co: "megabrand", contact: "Peter N.", by: "M.S.", channel: "Email", dir: "Sent by us", summary: "First email about a recruitment event", outcome: "No reply" },
+    { date: D(-12), co: "megabrand", contact: "Peter N.", by: "M.S.", channel: "Email", dir: "Sent by us", summary: "Follow-up email", outcome: "No reply" },
+    { date: D(-6), co: "fjord", contact: "Emil B.", by: "A.K.", channel: "Call", dir: "Two-way", summary: "Agreed to meet about a keynote", outcome: "Positive" },
+    { date: D(-9), co: "kobber", contact: "Ida K.", by: "L.M.", channel: "Email", dir: "Received from them", summary: "Interested in hosting; we sent a proposal", outcome: "Positive" },
+    { date: D(-13), co: "ravn", contact: "Lukas T.", by: "J.H.", channel: "Meeting", dir: "Two-way", summary: "Good meeting; asked for a written proposal", outcome: "Positive" },
+    { date: D(-5), co: "bolge", contact: "Nora V.", by: "M.S.", channel: "Call", dir: "Two-way", summary: "Open to a podcast collaboration", outcome: "Positive" },
+    { date: D(-45), co: "soby", contact: "Karen H.", by: "J.H.", channel: "Meeting", dir: "Two-way", summary: "Signed the entry package", outcome: "Positive" },
+    { date: D(-25), co: "strandvej", contact: "Jonas P.", by: "M.S.", channel: "Email", dir: "Received from them", summary: "No budget this year", outcome: "Negative" },
+  ];
+  return { companies, opps, interactions };
+}
+let S = seed();
+let nextOppId = 100;
+
+/* ---------- rules (lean spec §2–§3) ---------- */
+const co = id => S.companies.find(c => c.id === id);
+const oppsOf = id => S.opps.filter(o => o.co === id);
+const isOpen = o => OPEN.includes(o.stage);
+const teamActive = n => (TEAM.find(t => t.name === n) || {}).active !== false;
+
+function f4(c) {
+  const t = c.commercial.map(e => e.type);
+  if (!t.length) return null;
+  if (t.includes("Previous CBS Talks spend") || t.includes("Sponsors student organisations")) return 2;
+  if (t.some(x => ["Sponsors university activities", "Sponsors similar events", "Previous CBS Talks partner"].includes(x))) return 1;
+  return 0;
+}
+function fit(c) {
+  const v = [c.fit.f1[0], c.fit.f2[0], c.fit.f3[0], f4(c), c.fit.f5[0]];
+  return v.some(x => x == null) ? null : v.reduce((a, b) => a + b, 0);
+}
+function access(c) {
+  const contacts = c.contacts.filter(p => !p.left && !p.dnc);
+  const champ = contacts.find(p => p.rel === "Champion");
+  if (champ) return { level: 4, why: `${champ.name} (${champ.title}) is a champion` };
+  const sat = oppsOf(c.id).find(o => o.stage === "Won" && o.satisfaction === "Satisfied");
+  if (sat) return { level: 4, why: "Satisfied past partner" };
+  const warm = S.interactions.filter(i => i.co === c.id && i.outcome === "Positive" && days(i.date, todayIso()) <= SET.warmDays
+    && contacts.some(p => p.name === i.contact)).sort((a, b) => b.date.localeCompare(a.date))[0];
+  if (warm) return { level: 3, why: `${warm.contact} responded positively on ${fmt(warm.date)}` };
+  if (c.intro) return { level: 2, why: c.intro };
+  const named = contacts.find(p => !NOT_SUITABLE.includes(p.role));
+  if (named) return { level: 1, why: `${named.name}, ${named.title}` };
+  return { level: 0, why: "No named contact and no introduction route yet" };
+}
+function quadrant(c) {
+  const f = fit(c), a = access(c).level;
+  if (f == null) return "Research";
+  if (f >= SET.fitHigh && a >= SET.accessHigh) return "Priority";
+  if (f >= SET.fitHigh) return "Build a Path";
+  if (a >= SET.accessHigh) return "Quick Win";
+  return "Low Priority";
+}
+const qClass = q => q.split(" ")[0];
+function lastContact(id) { const l = S.interactions.filter(i => i.co === id).map(i => i.date).sort().pop(); return l || ""; }
+function oppFlag(o) {
+  const t = todayIso();
+  if (o.stage === "Won" && o.renewalDate && days(t, o.renewalDate) <= SET.renewalDays
+    && !S.opps.some(x => x.co === o.co && x.renewal && isOpen(x))) return "Renewal due";
+  if (!isOpen(o)) return "";
+  if (!o.next || !o.due) return "Missing next action";
+  if (days(t, o.due) < 0) return "Overdue";
+  if (o.stage === "Contacted") {
+    const ints = S.interactions.filter(i => i.co === o.co);
+    const sent = ints.filter(i => i.dir === "Sent by us").map(i => i.date).sort().pop();
+    const recv = ints.filter(i => i.dir !== "Sent by us").map(i => i.date).sort().pop() || "";
+    if (sent && days(sent, t) >= SET.noReplyDays && recv < sent) return "No reply";
+  }
+  if (days(t, o.due) <= 7) return "Due this week";
+  return "";
+}
+function suggestion(c) {
+  if (oppsOf(c.id).some(o => oppFlag(o) === "Renewal due")) {
+    const o = oppsOf(c.id).find(o => oppFlag(o) === "Renewal due");
+    return o.satisfaction === "Satisfied" ? `Renewal: propose the same package (${o.pkg}) or one level up.` : "Renewal: propose the same package and ask what would make it more valuable.";
+  }
+  const a = access(c).level, f = f4(c), out = [];
+  if (c.fit.f2[0] === 2) out.push("Speaker (cheapest first step)");
+  if (c.fit.f3[0] === 2) out.push("Recruitment event or case workshop");
+  if (f === 2 && a >= 3) out.push("Sponsorship package");
+  if (c.need) out.push(`In-kind / specific need: ${c.need}`);
+  if (!out.length) return "Nothing on the cheat sheet fits yet. Don't approach now.";
+  const money = a < 3 ? " No cash ask in the first contact (Access below Warm)." : "";
+  return out.join(" · ") + "." + money;
+}
+function checks(c) {
+  const out = [];
+  if (!teamActive(c.owner)) out.push("Needs new owner");
+  ["f1", "f2", "f3", "f5"].forEach(k => { if (c.fit[k][0] === 2 && !c.fit[k][2]) out.push("Source missing for a 2"); });
+  if (c.contacts.some(p => days(p.verified, todayIso()) > 183)) out.push("Re-check contact");
+  if (c.evidence.some(e => e.ai && !e.checked)) out.push("Unchecked AI evidence");
+  if (!c.commercial.length) out.push("Add commercial evidence");
+  if (oppsOf(c.id).some(o => o.stage === "Won" && o.satisfaction === "Unknown" && o.end && o.end < todayIso())) out.push("Record satisfaction");
+  return [...new Set(out)];
+}
+
+/* ---------- work queue (§3.5) ---------- */
+function queue() {
+  const order = { "Renewal due": 1, "Overdue": 2, "No reply": 3, "Due this week": 4, "Missing next action": 5 };
+  const deals = S.opps.map(o => ({ o, flag: oppFlag(o) })).filter(x => x.flag)
+    .sort((a, b) => order[a.flag] - order[b.flag] || (a.o.renewalDate || a.o.due || "").localeCompare(b.o.renewalDate || b.o.due || ""));
+  const renewals = deals.filter(x => x.flag === "Renewal due");
+  const follow = deals.filter(x => x.flag !== "Renewal due");
+  const sortFit = (a, b) => fit(b) - fit(a) || access(b).level - access(a).level;
+  const prio = S.companies.filter(c => quadrant(c) === "Priority" && !oppsOf(c.id).some(isOpen) && !oppsOf(c.id).some(o => oppFlag(o) === "Renewal due")).sort(sortFit);
+  const paths = S.companies.filter(c => c.path).sort((a, b) => a.path.started.localeCompare(b.path.started));
+  const quick = S.companies.filter(c => quadrant(c) === "Quick Win" && c.need && !oppsOf(c.id).some(isOpen)).sort(sortFit);
+  const room = SET.pathCap - paths.length;
+  const cands = room > 0 ? S.companies.filter(c => quadrant(c) === "Build a Path" && !c.path).sort(sortFit).slice(0, room) : [];
+  return { renewals, follow, prio, paths, quick, cands };
+}
+
+/* ---------- UI shell ---------- */
+const TABS = [["today", "Today"], ["matrix", "Matrix"], ["companies", "Companies"], ["pipeline", "Pipeline"], ["dashboard", "Dashboard"]];
+let current = "today";
+try { const t = localStorage.getItem("cbs-desk-tab"); if (TABS.some(x => x[0] === t)) current = t; } catch (e) {}
+let companyFilter = "All", companySearch = "";
+
+function renderTabs() {
+  const q = queue();
+  const urgent = q.renewals.length + q.follow.filter(x => x.flag === "Overdue" || x.flag === "No reply").length;
+  document.getElementById("tabs").innerHTML = TABS.map(([id, label]) =>
+    `<button class="tab" role="tab" id="tab-${id}" aria-selected="${id === current}" data-tab="${id}">${label}${id === "today" && urgent ? ` <span class="count alert">${urgent}</span>` : ""}</button>`).join("");
+}
+function render() {
+  document.getElementById("semester-line").textContent =
+    `${SET.semester.name} · ${fmtY(SET.semester.start)} – ${fmtY(SET.semester.end)} · Bringing leadership to CBS`;
+  renderTabs();
+  const v = document.getElementById("view");
+  v.innerHTML = ({ today: viewToday, matrix: viewMatrix, companies: viewCompanies, pipeline: viewPipeline, dashboard: viewDashboard })[current]();
+  if (openCompany) renderDrawer();
+}
+
+const flagPill = f => {
+  const cls = { "Renewal due": "info", "Overdue": "crit", "No reply": "crit", "Due this week": "warn", "Missing next action": "crit" }[f] || "info";
+  const ic = { "Renewal due": "↻", "Overdue": "!", "No reply": "…", "Due this week": "◷", "Missing next action": "!" }[f] || "";
+  return `<span class="pill ${cls}"><span class="ic" aria-hidden="true">${ic}</span>${esc(f)}</span>`;
+};
+const qPill = q => `<span class="qpill ${qClass(q)}">${esc(q)}</span>`;
+const fitBar = c => { const f = fit(c); return f == null ? `<span class="muted small">not fully rated</span>`
+  : `<span class="fitbar"><span class="track"><span class="fill" style="width:${f * 10}%"></span></span><b class="num">${f}</b><span class="muted small">/10</span></span>`; };
+const ladder = c => { const a = access(c).level; return `<span class="ladder" aria-label="Access ${a} of 4">${[1, 2, 3, 4].map(i => `<i class="${i <= a ? "on" : ""}"></i>`).join("")}</span> <span class="small">${ACCESS_NAMES[a]}</span>`; };
+
+/* ---------- Today ---------- */
+function viewToday() {
+  const q = queue();
+  const dealRow = ({ o, flag }) => { const c = co(o.co); return `
+    <div class="qrow">
+      <div><button class="co" data-open="${c.id}">${esc(c.name)}</button><div class="meta">${esc(o.type)} · ${esc(o.stage)} · ${esc(o.owner)}${teamActive(o.owner) ? "" : " (left: needs new owner)"}</div></div>
+      <div>${flag === "Renewal due" ? `Renewal date <b>${fmt(o.renewalDate)}</b> · satisfaction: ${esc(o.satisfaction)}<div class="meta">${esc(suggestion(c))}</div>`
+        : `${esc(o.next || "Add a next action")}<div class="meta">${o.due ? "due " + fmt(o.due) : "no due date"}</div>`}</div>
+      <div class="actions">${flagPill(flag)}<button class="btn small primary" data-log="${o.id}">Log contact</button></div>
+    </div>`; };
+  const coRow = (c, why, next) => `
+    <div class="qrow">
+      <div><button class="co" data-open="${c.id}">${esc(c.name)}</button><div class="meta">Fit ${fit(c) ?? "—"}/10 · ${ACCESS_NAMES[access(c).level]} · ${esc(c.owner)}</div></div>
+      <div>${esc(next)}<div class="meta">${esc(why)}</div></div>
+      <div class="actions">${qPill(quadrant(c))}<button class="btn small" data-open="${c.id}">Open</button></div>
+    </div>`;
+  const sec = (n, title, sub, rows, empty) => `
+    <section class="card section"><div class="section-head"><h3><span class="step">${n}</span>${title}</h3><span class="muted small">${sub}</span></div>
+    ${rows.length ? rows.join("") : `<div class="empty">${empty}</div>`}</section>`;
+  return `
+  <div class="view-head"><div><h2>Today</h2><p>Work from the top: renewals, follow-ups, priority prospects, then building paths. Click a company for details.</p></div>
+  <span class="muted small">${fmtY(todayIso())}</span></div>
+  ${sec(1, "Renewals", "partners whose renewal date is within 90 days", q.renewals.map(dealRow), "No renewals due.")}
+  ${sec(2, "Follow-ups", "overdue · no reply · due this week", q.follow.map(dealRow), "Nothing due this week.")}
+  ${sec(3, "Priority prospects without a deal", "high Fit, high Access", q.prio.map(c => coRow(c, "Suggested first step (cheat sheet)", suggestion(c))), "Every Priority company has a deal in progress.")}
+  ${sec(4, "Building paths", `${q.paths.length} of ${SET.pathCap} in progress`, [
+      ...q.paths.map(c => coRow(c, `Path started ${fmt(c.path.started)}`, c.path.action)),
+      ...q.cands.map(c => coRow(c, "Path candidate: high Fit, no way in yet", "Decide whether to start a path"))], "No paths in progress.")}
+  ${q.quick.length ? sec("+", "Quick wins for a current need", "low Fit, high Access, only for a specific need", q.quick.map(c => coRow(c, "Quick win", "Need: " + c.need)), "") : ""}`;
+}
+
+/* ---------- Matrix ---------- */
+function viewMatrix() {
+  const by = q => S.companies.filter(c => quadrant(c) === q).sort((a, b) => fit(b) - fit(a) || access(b).level - access(a).level);
+  const chip = c => `<button class="chip" data-open="${c.id}">${esc(c.name)} <span class="sc num">Fit ${fit(c) ?? "—"} · A${access(c).level}</span></button>`;
+  const quad = (q, rule, extra = "") => `<div class="quad ${qClass(q)}"><h3>${q}<span class="muted small num">${by(q).length}</span></h3><div class="rule">${rule}${extra}</div>
+    <div class="chips">${by(q).map(chip).join("") || `<span class="muted small">None</span>`}</div></div>`;
+  const paths = S.companies.filter(c => c.path).length;
+  const research = by("Research");
+  return `
+  <div class="view-head"><div><h2>Matrix</h2><p>Fit (0–10) against Access (0–4). High Fit is ${SET.fitHigh}+, high Access is "Introduction available" or better.</p></div></div>
+  <div class="matrix">
+    <div class="axis-y">Fit → high</div>
+    ${quad("Build a Path", "High Fit, low Access. Work on an introduction.", ` <b>${paths} / ${SET.pathCap} paths in progress.</b>`)}
+    ${quad("Priority", "High Fit, high Access. Contact now: owner and first contact within 2 weeks.")}
+    ${quad("Low Priority", "Low Fit, low Access. No outreach; re-check yearly.")}
+    ${quad("Quick Win", "Low Fit, high Access. Only for a specific current need.")}
+    <div></div><div class="axis-x" style="grid-column:2/4"><span>← low Access</span><span>high Access →</span></div>
+  </div>
+  <section class="card section"><div class="section-head"><h3>Research</h3><span class="muted small">not fully rated yet, so outside the matrix</span></div>
+  <div class="chips">${research.map(chip).join("") || `<span class="muted small">None</span>`}</div></section>`;
+}
+
+/* ---------- Companies ---------- */
+function viewCompanies() {
+  const filters = ["All", "Priority", "Build a Path", "Quick Win", "Low Priority", "Research"];
+  const rows = S.companies.filter(c => (companyFilter === "All" || quadrant(c) === companyFilter)
+    && (!companySearch || c.name.toLowerCase().includes(companySearch.toLowerCase())))
+    .sort((a, b) => (fit(b) ?? -1) - (fit(a) ?? -1) || access(b).level - access(a).level);
+  return `
+  <div class="view-head"><div><h2>Companies</h2><p>${S.companies.length} companies. Fit and Access are calculated from ratings, evidence, contacts and the contact log.</p></div></div>
+  <div class="toolbar">
+    <input class="search" id="search" type="search" placeholder="Search companies" value="${esc(companySearch)}" aria-label="Search companies">
+    ${filters.map(f => `<button class="filter" data-filter="${f}" aria-pressed="${companyFilter === f}">${f}</button>`).join("")}
+  </div>
+  <div class="card table-wrap"><table>
+    <thead><tr><th>Company</th><th>Quadrant</th><th>Fit</th><th>Access</th><th>Owner</th><th>Last contact</th><th>Open deals</th><th>Checks</th></tr></thead>
+    <tbody>${rows.map(c => `<tr data-open="${c.id}" tabindex="0">
+      <td><b>${esc(c.name)}</b><div class="muted small">${esc(c.industry)}</div></td>
+      <td>${qPill(quadrant(c))}</td><td>${fitBar(c)}</td><td style="white-space:nowrap">${ladder(c)}</td>
+      <td>${esc(c.owner)}</td><td class="num">${fmt(lastContact(c.id))}</td>
+      <td class="num">${oppsOf(c.id).filter(isOpen).length}</td>
+      <td>${checks(c).map(x => `<span class="pill crit" style="margin:2px 4px 2px 0">${esc(x)}</span>`).join("") || `<span class="muted small">OK</span>`}</td></tr>`).join("")
+      || `<tr><td colspan="8" class="empty">No companies match.</td></tr>`}</tbody>
+  </table></div>`;
+}
+
+/* ---------- Pipeline ---------- */
+function viewPipeline() {
+  const card = o => { const c = co(o.co); const f = oppFlag(o); return `
+    <div class="deal">
+      <button class="t" data-open="${c.id}">${esc(c.name)}</button>
+      <div class="small">${esc(o.type)} · ${o.kind === "Cash" ? (o.agreed ? dkk(o.agreed) : o.proposed ? dkk(o.proposed) + " proposed" : esc(o.pkg || "value not set")) : esc(o.noncash || o.kind)}</div>
+      <div class="small muted">${esc(o.owner)}${o.stage === "Lost" ? " · " + esc(o.lost) : o.stage === "Nurture" ? " · until " + fmt(o.nurtureUntil) : o.next ? " · " + esc(o.next) : ""}</div>
+      ${f ? `<div>${flagPill(f)}</div>` : ""}
+      <label class="small muted">Move to <select data-move="${o.id}" aria-label="Move ${esc(c.name)} to stage">
+        ${STAGES.map(s => `<option ${s === o.stage ? "selected" : ""}>${s}</option>`).join("")}</select></label>
+    </div>`; };
+  return `
+  <div class="view-head"><div><h2>Pipeline</h2><p>One card per proposed partnership. Follow-up is a flag, not a stage. Moving a card asks for the fields that stage requires.</p></div>
+  <button class="btn primary" id="new-deal">New deal</button></div>
+  <div class="board">${STAGES.map(s => { const list = S.opps.filter(o => o.stage === s);
+    return `<div class="col"><h3>${s}<span class="muted num">${list.length}</span></h3>${list.map(card).join("") || `<span class="muted small" style="padding:4px">Empty</span>`}</div>`; }).join("")}</div>`;
+}
+
+/* ---------- Dashboard ---------- */
+function viewDashboard() {
+  const sem = o => o.closed && o.closed >= SET.semester.start && o.closed <= SET.semester.end;
+  const wonSem = S.opps.filter(o => o.stage === "Won" && sem(o));
+  const lostSem = S.opps.filter(o => o.stage === "Lost" && sem(o));
+  const cashWon = wonSem.filter(o => o.kind === "Cash").reduce((s, o) => s + (o.agreed || 0), 0);
+  const proposed = S.opps.filter(o => ["Proposal sent", "Negotiation"].includes(o.stage) && o.kind === "Cash").reduce((s, o) => s + (o.proposed || 0), 0);
+  const pct = Math.min(cashWon / SET.semester.target, 1);
+  const stageCounts = OPEN.concat(["Nurture"]).map(s => [s, S.opps.filter(o => o.stage === s).length]);
+  const maxC = Math.max(1, ...stageCounts.map(x => x[1]));
+  const quads = ["Priority", "Build a Path", "Quick Win", "Low Priority", "Research"].map(q => [q, S.companies.filter(c => quadrant(c) === q).length]);
+  const health = [
+    ["Open deals without a next action", S.opps.filter(o => oppFlag(o) === "Missing next action").length],
+    ["Items with an owner who left", S.companies.filter(c => !teamActive(c.owner)).length + S.opps.filter(o => isOpen(o) && !teamActive(o.owner)).length],
+    ["Contacts to re-check (> 6 months)", S.companies.flatMap(c => c.contacts).filter(p => days(p.verified, todayIso()) > 183).length],
+    ["Unchecked AI evidence", S.companies.flatMap(c => c.evidence).filter(e => e.ai && !e.checked).length],
+    ["Won deals missing satisfaction", S.opps.filter(o => o.stage === "Won" && o.satisfaction === "Unknown" && o.end && o.end < todayIso()).length],
+  ];
+  const noncash = S.opps.filter(o => o.kind !== "Cash" && o.stage !== "Lost");
+  const reasons = LOST_REASONS.map(r => [r, lostSem.filter(o => o.lost === r).length]).filter(x => x[1]);
+  return `
+  <div class="view-head"><div><h2>Dashboard</h2><p>Counts and recorded amounts only: no probabilities, no expected values, no budget estimates.</p></div></div>
+  <div class="kpis">
+    <div class="card kpi"><span class="label">Cash won this semester</span><span class="value">${dkk(cashWon)}</span>
+      <div class="meter" role="img" aria-label="${Math.round(pct * 100)}% of target"><span style="width:${pct * 100}%"></span></div>
+      <span class="muted small">${Math.round(pct * 100)}% of the ${dkk(SET.semester.target)} target (placeholder)</span></div>
+    <div class="card kpi"><span class="label">Proposed, not committed</span><span class="value">${dkk(proposed)}</span><span class="muted small">cash in Proposal sent + Negotiation</span></div>
+    <div class="card kpi"><span class="label">Open deals</span><span class="value num">${S.opps.filter(isOpen).length}</span><span class="muted small">${noncash.filter(isOpen).length} of them non-cash or in-kind</span></div>
+    <div class="card kpi"><span class="label">Renewals due</span><span class="value num">${queue().renewals.length}</span><span class="muted small">within ${SET.renewalDays} days</span></div>
+  </div>
+  <div class="grid2">
+    <section class="card section"><div class="section-head"><h3>Open deals by stage</h3></div>
+      <div class="bars">${stageCounts.map(([s, n]) => `<div class="barrow"><span>${s}</span><span class="tr"><span class="b ${n ? "" : "zero"}" style="display:block;width:${n / maxC * 85}%"></span><span class="v num" style="left:${n / maxC * 85}%">${n}</span></span></div>`).join("")}</div></section>
+    <section class="card section"><div class="section-head"><h3>Companies by quadrant</h3></div>
+      <div class="list">${quads.map(([q, n]) => `<div class="li">${qPill(q)}<b class="num">${n}</b></div>`).join("")}</div></section>
+    <section class="card section"><div class="section-head"><h3>Won this semester</h3></div>
+      <div class="list">${wonSem.map(o => `<div class="li"><span><b>${esc(co(o.co).name)}</b> <span class="muted small">${esc(o.type)} · renewal ${fmt(o.renewalDate)} · ${esc(o.satisfaction)}</span></span><b class="num">${o.kind === "Cash" ? dkk(o.agreed) : esc(o.noncash)}</b></div>`).join("") || `<div class="empty">None yet.</div>`}</div></section>
+    <section class="card section"><div class="section-head"><h3>Lost this semester</h3></div>
+      <div class="list">${lostSem.map(o => `<div class="li"><span><b>${esc(co(o.co).name)}</b> <span class="muted small">${esc(o.type)}</span></span><span class="pill info">${esc(o.lost)}</span></div>`).join("") || `<div class="empty">None.</div>`}</div>
+      ${reasons.length ? `<div class="muted small">Reasons: ${reasons.map(([r, n]) => `${esc(r)} (${n})`).join(" · ")}</div>` : ""}</section>
+    <section class="card section"><div class="section-head"><h3>Non-cash and in-kind</h3><span class="muted small">listed, not summed in DKK</span></div>
+      <div class="list">${noncash.map(o => `<div class="li"><span><b>${esc(co(o.co).name)}</b> <span class="muted small">${esc(o.noncash)}</span></span><span class="small">${esc(o.stage)}</span></div>`).join("") || `<div class="empty">None.</div>`}</div></section>
+    <section class="card section"><div class="section-head"><h3>Data health</h3></div>
+      <div class="list">${health.map(([l, n]) => `<div class="li"><span>${l}</span>${n ? `<span class="pill crit">${n}</span>` : `<span class="pill good">0</span>`}</div>`).join("")}</div></section>
+  </div>`;
+}
+
+/* ---------- Company drawer ---------- */
+let openCompany = null;
+function renderDrawer() {
+  const c = co(openCompany); if (!c) return;
+  const a = access(c), q = quadrant(c), f4v = f4(c);
+  const crit = [["f1", "F1 Student pull"], ["f2", "F2 Content fit"], ["f3", "F3 Reason to work with us"], ["f4", "F4 Track record"], ["f5", "F5 Long-term potential"]];
+  const fitRows = crit.map(([k, label]) => {
+    if (k === "f4") return `<div class="fitrow"><span class="name">${label}</span>
+      <span class="seg locked" aria-label="Derived value ${f4v ?? "not set"}">${[0, 1, 2].map(v => `<button disabled aria-pressed="${f4v === v}">${v}</button>`).join("")}</span>
+      <span class="reason">Derived from commercial evidence${f4v == null ? ": add at least one item" : ""}. Not rated by hand.</span></div>`;
+    const [v, why, src] = c.fit[k];
+    return `<div class="fitrow"><span class="name">${label}</span>
+      <span class="seg" role="group" aria-label="${label}">${[0, 1, 2].map(n => `<button data-rate="${k}" data-val="${n}" aria-pressed="${v === n}">${n}</button>`).join("")}</span>
+      <span class="reason">${why ? esc(why) : `<span class="muted">Not rated yet</span>`}${src ? `<div class="src">Source: ${esc(src)}</div>` : ""}${v === 2 && !src ? `<div class="warnline">Source required for a 2</div>` : ""}</span></div>`;
+  }).join("");
+  const deals = oppsOf(c.id);
+  const ints = S.interactions.filter(i => i.co === c.id).sort((x, y) => y.date.localeCompare(x.date));
+  const labelTag = e => e.label === "Verified fact" ? `<span class="label-v">Verified fact</span>` : e.label === "Source-backed inference" ? `<span class="label-i">Inference</span>` : `<span class="label-u">Unknown</span>`;
+  const hasStudentOrg = c.commercial.some(e => e.type === "Sponsors student organisations");
+  const prepare = [hasStudentOrg ? "“We already work with other CBS organisations.” Offer something different (format, topic, audience)." : null,
+    f4v === 0 ? "“We have no budget for this.” Offer a non-cash first step and ask when budgets are planned." : null,
+    "“What do we get?” Bring real attendance and study-line numbers and offer a partner report."].filter(Boolean).slice(0, 2);
+  document.getElementById("overlay").innerHTML = `
+  <div class="scrim" data-close></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="dr-title">
+    <div class="drawer-head">
+      <div class="row"><div><h2 id="dr-title">${esc(c.name)}</h2><div class="sub">${esc(c.industry)} · ${esc(c.size)} employees in DK (info only) · owner ${esc(c.owner)}${teamActive(c.owner) ? "" : " (left)"}</div></div>
+        <button class="close" data-close aria-label="Close">✕</button></div>
+      <div class="scores"><span class="big num">${fit(c) ?? "—"}<small> /10 Fit</small></span><span class="big num">${a.level}<small> /4 Access</small></span><span class="qtag">${esc(q)}</span></div>
+    </div>
+    <div class="drawer-body">
+      <div class="suggest"><span class="k">Suggested first step · partnership type cheat sheet · your decision</span><span>${esc(suggestion(c))}</span></div>
+      ${checks(c).length ? `<div>${checks(c).map(x => `<span class="pill crit" style="margin:0 6px 6px 0">${esc(x)}</span>`).join("")}</div>` : ""}
+      <section class="card section"><div class="section-head"><h3>Fit</h3><span class="muted small">click a number to re-rate; the quadrant updates live</span></div>${fitRows}</section>
+      <section class="card section"><div class="section-head"><h3>Access</h3><span class="muted small">calculated, never typed in</span></div>
+        <div class="access-ladder">${ACCESS_NAMES.map((n, i) => `<div class="rung ${i <= a.level ? "on" : ""} ${i === a.level ? "current" : ""}"><b>${i}</b>${n}</div>`).join("")}</div>
+        <div class="small"><b>Why:</b> ${esc(a.why)}</div></section>
+      <section class="card section"><div class="section-head"><h3>Commercial evidence</h3><span class="muted small">observed facts only, never a budget estimate</span></div>
+        ${c.commercial.map(e => `<div class="evi"><div class="top"><span class="pill info">${esc(e.type)}</span>${e.amount ? `<b class="num">${dkk(e.amount)} (${esc(e.year)}, our records)</b>` : ""}</div><span class="small">${esc(e.desc)}</span>${e.src ? `<span class="src">Source: ${esc(e.src)}</span>` : ""}</div>`).join("") || `<div class="empty">None recorded. F4 stays unrated and the company stays in Research.</div>`}</section>
+      <section class="card section"><div class="section-head"><h3>Deals</h3><button class="btn small primary" data-newdeal="${c.id}">New deal</button></div>
+        ${deals.map(o => `<div class="evi"><div class="top"><b>${esc(o.type)}</b><span class="small">${esc(o.stage)}</span>${oppFlag(o) ? flagPill(oppFlag(o)) : ""}</div>
+          <span class="small">${o.kind === "Cash" ? (o.agreed ? dkk(o.agreed) + " agreed" : o.proposed ? dkk(o.proposed) + " proposed" : "no value yet") : esc(o.noncash)}${o.next ? " · next: " + esc(o.next) + (o.due ? " (" + fmt(o.due) + ")" : "") : ""}</span>
+          ${isOpen(o) || oppFlag(o) ? `<div><button class="btn small" data-log="${o.id}">Log contact</button></div>` : ""}</div>`).join("") || `<div class="empty">No deals yet.</div>`}</section>
+      <section class="card section"><div class="section-head"><h3>Contacts</h3></div>
+        ${c.contacts.map(p => `<div class="evi"><div class="top"><b>${esc(p.name)}</b><span class="small">${esc(p.title)}</span>${p.rel === "Champion" ? `<span class="pill good">Champion</span>` : ""}${days(p.verified, todayIso()) > 183 ? `<span class="pill crit">Re-check still in role</span>` : ""}</div>
+          <span class="src">${esc(p.role)} · CBS alumnus: ${esc(p.alumni)} · source: ${esc(p.source)} · verified ${fmt(p.verified)}</span></div>`).join("") || `<div class="empty">No contacts yet. Use the who-to-contact cheat sheet.</div>`}
+        ${c.intro ? `<div class="small"><b>Intro path:</b> ${esc(c.intro)}</div>` : ""}
+        ${c.path ? `<div class="small"><b>Path in progress</b> since ${fmt(c.path.started)}: ${esc(c.path.action)}</div>` : ""}</section>
+      <section class="card section"><div class="section-head"><h3>Evidence</h3><span class="muted small">Verified fact · Inference · Unknown</span></div>
+        ${c.evidence.map(e => `<div class="evi ${e.label === "Source-backed inference" ? "inference" : ""}"><div class="top">${labelTag(e)}<span class="muted small">${esc(e.crit)}</span>${e.ai && !e.checked ? `<span class="pill crit">AI draft, unchecked: do not use</span>` : ""}</div>
+          <span class="stmt small">${e.label === "Source-backed inference" ? "Inference: " : ""}${esc(e.text)}</span>${e.reasoning ? `<span class="src">Reasoning: ${esc(e.reasoning)}</span>` : ""}${e.src ? `<span class="src">Source: ${esc(e.src)}</span>` : ""}</div>`).join("") || `<div class="empty">No extra evidence recorded.</div>`}</section>
+      <section class="card section"><div class="section-head"><h3>Before you contact them</h3><span class="muted small">conversations cheat sheet</span></div>
+        <div class="small"><b>Ask</b> (their goals are something to ask about, not to assume):</div>
+        <ul class="small" style="margin:0;padding-left:18px"><li>Which profiles are hardest for you to reach right now?</li><li>What would a successful student partnership look like for you?</li><li>Who else would usually be involved in a decision like this?</li></ul>
+        <div class="small"><b>Prepare for</b> (possibilities, not predictions):</div>
+        <ul class="small" style="margin:0;padding-left:18px">${prepare.map(p => `<li>${esc(p)}</li>`).join("")}</ul></section>
+      <section class="card section"><div class="section-head"><h3>Contact log</h3><span class="muted small">last contact ${fmt(lastContact(c.id))}</span></div>
+        <div class="timeline">${ints.map(i => `<div class="tl"><span class="muted num">${fmt(i.date)}</span><span><b>${esc(i.channel)}</b> · ${esc(i.dir)} · ${esc(i.contact)} · <i>${esc(i.outcome)}</i><br>${esc(i.summary)}</span></div>`).join("") || `<div class="empty">No contact logged yet.</div>`}</div></section>
+    </div>
+  </aside>`;
+}
+function closeDrawer() { openCompany = null; document.getElementById("overlay").innerHTML = ""; }
+
+/* ---------- modals ---------- */
+function modal(html, onSubmit) {
+  const host = document.createElement("div");
+  host.className = "modal";
+  host.innerHTML = `<div class="scrim" data-mclose></div><form class="box" role="dialog" aria-modal="true">${html}<div class="err" id="m-err" hidden></div>
+    <div class="btns"><button type="button" class="btn" data-mclose>Cancel</button><button type="submit" class="btn primary">Save</button></div></form>`;
+  document.body.appendChild(host);
+  const form = host.querySelector("form");
+  const first = form.querySelector("input, select, textarea"); if (first) first.focus();
+  host.addEventListener("click", e => { if (e.target.closest("[data-mclose]")) { host.remove(); render(); } });
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form).entries());
+    const err = onSubmit(data);
+    if (err) { const el = form.querySelector("#m-err"); el.textContent = err; el.hidden = false; return; }
+    host.remove(); render();
+  });
+}
+const opts = (list, sel) => list.map(x => `<option ${x === sel ? "selected" : ""}>${esc(x)}</option>`).join("");
+
+function logContact(oppId) {
+  const o = S.opps.find(x => x.id === Number(oppId)); const c = co(o.co);
+  modal(`<h3>Log contact · ${esc(c.name)}</h3>
+    <div class="field-row"><label class="field">Channel<select name="channel">${opts(["Email", "LinkedIn", "Call", "Meeting", "Event", "Other"], "Email")}</select></label>
+    <label class="field">Direction<select name="dir">${opts(["Sent by us", "Received from them", "Two-way"], "Sent by us")}</select></label></div>
+    <div class="field-row"><label class="field">Contact<select name="contact">${opts(c.contacts.map(p => p.name), o.contact)}</select></label>
+    <label class="field">Outcome<select name="outcome">${opts(["Positive", "Neutral", "Negative", "No reply"], "Positive")}</select></label></div>
+    <label class="field">Summary (one line)<input name="summary" maxlength="280" placeholder="What happened?"></label>
+    <div class="field-row"><label class="field">Next action<input name="next" value="${esc(o.next || "")}"></label>
+    <label class="field">Due<input name="due" type="date" value="${o.due || D(7)}"></label></div>`,
+    d => {
+      if (!d.summary.trim()) return "Add a one-line summary.";
+      if (!d.next.trim()) return "Every open deal needs a next action.";
+      const before = quadrant(c);
+      S.interactions.push({ date: todayIso(), co: c.id, contact: d.contact, by: o.owner, channel: d.channel, dir: d.dir, summary: d.summary, outcome: d.outcome });
+      o.next = d.next; o.due = d.due;
+      if (o.stage === "Planned" && d.dir === "Sent by us") o.stage = "Contacted";
+      const after = quadrant(c);
+      toast(after !== before ? `Logged. ${c.name} moved from ${before} to ${after}.` : `Logged. Next: ${d.next} (${fmt(d.due)}).`);
+    });
+}
+
+const REQUIRE = {
+  "Proposal sent": o => o.kind === "Cash" && !o.pkg && !o.proposed ? ["pkg"] : [],
+  "Won": o => [...(o.kind === "Cash" && !o.agreed ? ["agreed"] : []), ...(!o.renewalDate ? ["renewalDate"] : [])],
+  "Lost": o => o.lost ? [] : ["lost"],
+  "Nurture": o => [...(!o.nurture ? ["nurture"] : []), ...(!o.nurtureUntil ? ["nurtureUntil"] : [])],
+};
+function moveStage(id, stage) {
+  const o = S.opps.find(x => x.id === Number(id)); const c = co(o.co);
+  const need = (REQUIRE[stage] || (() => []))(o);
+  const apply = () => {
+    o.stage = stage;
+    if (["Won", "Lost"].includes(stage)) { o.closed = todayIso(); o.next = ""; o.due = ""; }
+    if (stage === "Won" && o.kind === "Cash" && !c.commercial.some(e => e.type === "Previous CBS Talks spend" && e.year === String(TODAY.getFullYear())))
+      c.commercial.push({ type: "Previous CBS Talks spend", desc: `${o.type} agreed this semester`, amount: o.agreed, year: String(TODAY.getFullYear()) });
+    if (stage === "Won" && !o.satisfaction) o.satisfaction = "Unknown";
+    if (stage === "Nurture") { o.next = "Revisit"; o.due = o.nurtureUntil; }
+    toast(`${c.name} moved to ${stage}.`);
+  };
+  if (!need.length) { apply(); render(); return; }
+  const fields = {
+    pkg: `<label class="field">Package<select name="pkg">${opts(PACKAGES.map(p => p.name), "Standard package")}</select></label>`,
+    agreed: `<label class="field">Agreed value (DKK)<input name="agreed" type="number" min="0" step="500" value="${o.proposed || ""}"></label>`,
+    renewalDate: `<label class="field">Renewal date<input name="renewalDate" type="date" value="${D(300)}"></label>`,
+    lost: `<label class="field">Lost reason<select name="lost">${opts(LOST_REASONS, "No budget")}</select></label>`,
+    nurture: `<label class="field">Why nurture?<input name="nurture" placeholder="e.g. budget decided in spring"></label>`,
+    nurtureUntil: `<label class="field">Revisit on<input name="nurtureUntil" type="date" value="${D(90)}"></label>`,
+  };
+  modal(`<h3>Move ${esc(c.name)} to ${esc(stage)}</h3><p class="muted small" style="margin:0">This stage requires:</p>${need.map(k => fields[k]).join("")}`, d => {
+    if (need.includes("agreed") && !(Number(d.agreed) > 0)) return "Enter the agreed value.";
+    if (need.includes("nurture") && !d.nurture.trim()) return "Say why this is parked.";
+    if (d.pkg) { o.pkg = d.pkg; o.proposed = PACKAGES.find(p => p.name === d.pkg).price; }
+    if (d.agreed) o.agreed = Number(d.agreed);
+    ["renewalDate", "lost", "nurture", "nurtureUntil"].forEach(k => { if (d[k]) o[k] = d[k]; });
+    apply();
+  });
+}
+function newDeal(companyId) {
+  const options = S.companies.filter(c => quadrant(c) !== "Research");
+  modal(`<h3>New deal</h3>
+    <label class="field">Company<select name="co">${options.map(c => `<option value="${c.id}" ${c.id === companyId ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></label>
+    <div class="field-row"><label class="field">Partnership type<select name="type">${opts(["Speaker", "Recruitment", "Event sponsor", "Recurring sponsor", "Annual partner", "Knowledge", "Content", "Networking", "In-kind"], "Speaker")}</select></label>
+    <label class="field">Value kind<select name="kind">${opts(["Cash", "In-kind", "Non-cash"], "Non-cash")}</select></label></div>
+    <label class="field">Owner<select name="owner">${opts(TEAM.filter(t => t.active).map(t => t.name), "A.K.")}</select></label>
+    <div class="field-row"><label class="field">Next action<input name="next" placeholder="e.g. Ask for an introduction"></label>
+    <label class="field">Due<input name="due" type="date" value="${D(7)}"></label></div>`, d => {
+      if (!d.next.trim()) return "A planned deal needs a next action.";
+      const c = co(d.co);
+      S.opps.push({ id: nextOppId++, co: d.co, type: d.type, stage: "Planned", owner: d.owner, contact: (c.contacts[0] || {}).name || "", kind: d.kind, noncash: d.kind !== "Cash" ? d.type : "", next: d.next, due: d.due });
+      toast(`Deal planned with ${c.name}.`);
+    });
+}
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 3200); }
+
+/* ---------- events ---------- */
+document.addEventListener("click", e => {
+  const t = e.target;
+  const tab = t.closest("[data-tab]"); if (tab) { current = tab.dataset.tab; try { localStorage.setItem("cbs-desk-tab", current); } catch (x) {} render(); window.scrollTo(0, 0); return; }
+  if (t.closest("[data-close]")) { closeDrawer(); return; }
+  const lg = t.closest("[data-log]"); if (lg) { logContact(lg.dataset.log); return; }
+  const nd = t.closest("[data-newdeal]"); if (nd) { newDeal(nd.dataset.newdeal); return; }
+  if (t.closest("#new-deal")) { newDeal(); return; }
+  const rate = t.closest("[data-rate]");
+  if (rate) { const c = co(openCompany); const before = quadrant(c); c.fit[rate.dataset.rate][0] = Number(rate.dataset.val);
+    const after = quadrant(c); render(); if (after !== before) toast(`${c.name} moved from ${before} to ${after}.`); return; }
+  const fl = t.closest("[data-filter]"); if (fl) { companyFilter = fl.dataset.filter; render(); return; }
+  const op = t.closest("[data-open]"); if (op) { openCompany = op.dataset.open; renderDrawer(); const b = document.querySelector(".drawer .close"); if (b) b.focus(); return; }
+  if (t.closest("#reset")) { S = seed(); closeDrawer(); render(); toast("Demo reset to the example data."); }
+});
+document.addEventListener("change", e => { const m = e.target.closest("[data-move]"); if (m) moveStage(m.dataset.move, m.value); });
+document.addEventListener("input", e => { if (e.target.id === "search") { companySearch = e.target.value; const pos = e.target.selectionStart; render(); const s = document.getElementById("search"); s.focus(); s.setSelectionRange(pos, pos); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { const m = document.querySelector(".modal"); if (m) { m.remove(); render(); return; } if (openCompany) closeDrawer(); }
+  if (e.key === "Enter" && e.target.matches("tr[data-open]")) { openCompany = e.target.dataset.open; renderDrawer(); }
+});
+render();
+</script>
+</body>
+</html>
