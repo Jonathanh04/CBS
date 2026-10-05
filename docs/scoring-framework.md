@@ -280,6 +280,10 @@ count and checks that the roles really are relevant to CBS students.
 
 ### D6 — Financial Sponsorship Potential (weight 10)
 
+> **Now derived, not rated:** D6 = the Capacity + Propensity index of the
+> [Financial Potential Model](financial-potential-model.md) §9, rounded to the
+> nearest 25. The anchors below remain as a description of what each level means.
+
 *Can and do they pay for partnerships at the level we ask for?* Defined
 relative to **CBS Talks' standard partnership package** (the "standard ask"),
 not in absolute DKK, so it stays valid when prices change.
@@ -471,6 +475,10 @@ series. The Partnerships Manager edits the suggestion.
   research queue, ordered by how much its unknowns could change its tier.
 
 ### 6.6 Step 6: Sub-scores B–G
+
+> **B (Financial Potential) is now the Financial Potential Score** from
+> [`financial-potential-model.md`](financial-potential-model.md). The B column below
+> is kept for reference only.
 
 Each sub-score is a weighted combination of the same dimension scores, using
 its own weights. They use the same unknown handling. The gate applies to all

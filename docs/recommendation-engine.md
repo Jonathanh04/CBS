@@ -166,6 +166,11 @@ near miss. These feed "Not recommended — would change if…" and "revisit when
 
 ### Step 3 — Suitability per type (0–100)
 
+> "B" in the formulas below is the Financial Potential Score
+> ([`financial-potential-model.md`](financial-potential-model.md)). Annual-strategic
+> readiness now requires an **estimated tier ≥ 20–50k with evidence level A or B**
+> in place of "D6 ≥ 75 with verified history".
+
 Built only from existing scores, so it is traceable:
 
 | Type | Formula |

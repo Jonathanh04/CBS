@@ -135,7 +135,7 @@ reads, never what it claims.
 |---|---|
 | **Source** | D4 (named speaker), D5 (roles for students), D6 (financial level relative to the standard ask), D2 (content, data, cases), in-kind capacity |
 | **Shows** | One line per contribution type, each tagged |
-| **Rules** | **Money:** say *"at standard-ask level"* only with [V] sponsorship history at that level. Otherwise write "budget level unknown [?]". Never estimate an amount. **Speakers:** name a person only if a Person record exists; say whether speaking ability is verified (recordings) or not |
+| **Rules** | **Money:** shown as the Financial Potential block ([`financial-potential-model.md`](financial-potential-model.md) §6): estimated tier, plausible range, confidence, basis, always labelled as an estimate. Previously:  say *"at standard-ask level"* only with [V] sponsorship history at that level. Otherwise write "budget level unknown [?]". Never estimate an amount. **Speakers:** name a person only if a Person record exists; say whether speaking ability is verified (recordings) or not |
 
 ### Field 8 — Suggested opening angle for outreach
 
