@@ -194,8 +194,8 @@ else:                            "Low Priority"
 | **Overdue** | Open opportunity with `next_action_due` < today |
 | **Due this week** | Open opportunity with `next_action_due` ≤ today + 7 |
 | **Missing next action** | Open opportunity with no `next_action` or no due date |
-| **No reply** | Stage *Contacted* and no logged reply for 10 days |
-| **Path overdue** | Company in Build a Path with `path_started_at` more than one semester ago |
+| **No reply** | Stage *Contacted*, our last message (`direction = sent by us`) is 10+ days old, and nothing has been received from them since |
+| **Path overdue** | `path_in_progress = true` and `path_started_at` is before the **current semester's start date** (from the CBS Talks settings), i.e. the path has run for longer than a semester |
 | **Path cap exceeded** | More than 5 companies with `path_in_progress = true` |
 | **Stale research** | `fit_reviewed_at` more than 12 months ago |
 | **Unchecked AI evidence** | Evidence with `ai_drafted = true` and no `checked_by` |
@@ -257,7 +257,7 @@ of rewarding good delivery.
 
 ### 4.3 Logging
 
-- **Interaction** (≤ 1 minute): date, channel, contact, one-line summary, outcome
+- **Interaction** (≤ 1 minute): date, channel, **direction** (*sent by us / received from them / two-way* for calls and meetings), contact, one-line summary, outcome
   (*positive / neutral / negative / no reply*), and update next action.
 - **Last contact date** is always derived from Interactions, never typed in.
 - **Notes:** one short free-text field per company (≤ 500 characters). Nothing
@@ -308,7 +308,7 @@ There is no "likely objective" field. Their goals are something to **ask about**
 | Name | ✅ | |
 | Website | ✅ | |
 | CVR number | optional | For Danish entities |
-| Industry | ✅ | Short fixed list (about 12 values) |
+| Industry | ✅ | Fixed list (§5.1) |
 | Size band (DK employees) | optional | Descriptive only. **Not used in any rule** |
 | Owner (board member) | ✅ | |
 | F1 Student pull + reason (+ source if 2) | ✅ | |
@@ -328,6 +328,43 @@ There is no "likely objective" field. Their goals are something to **ask about**
 relationship (*named / champion*), CBS alumnus (yes/no/unknown), work email or
 LinkedIn URL (published or given to us only), source, verified at, left company,
 do not contact.
+
+### 5.1 Industry list
+
+Professional services & consulting · Finance, banking & insurance · Technology & software ·
+Energy & utilities · Life sciences & healthcare · Consumer goods & retail ·
+Shipping, logistics & transport · Manufacturing & industrials · Media, marketing & communications ·
+Investors & startup ecosystem · Public sector, NGOs & associations · Hospitality, food & venues · Other
+
+### 5.2 Contact role categories
+
+"Counts for Access 1" means a named person in this role is a suitable entry point
+(see the [who-to-contact cheat sheet](cheat-sheets/who-to-contact.md)).
+
+| Role category | Counts for Access 1 |
+|---|---|
+| Campus recruiter / early careers | Yes |
+| University relations | Yes |
+| Talent acquisition | Yes |
+| Employer branding | Yes |
+| HR manager / director | Yes |
+| Marketing | Yes |
+| Partnerships / sponsorship | Yes |
+| Communications | Yes |
+| CSR / sustainability | Yes |
+| Events / sales (venues) | Yes |
+| Community / ecosystem | Yes |
+| Subject-matter expert / speaker | Yes |
+| Founder / CEO (small company) | Yes |
+| Country manager / senior executive | Yes |
+| Executive assistant (routing only) | No |
+| Other | No |
+
+### 5.3 What "this semester" means
+
+The current semester is set in the CBS Talks settings (start date, end date,
+cash target). "Won this semester", "Lost this semester" and "Path overdue" all use
+those dates, so update them at the start of each semester.
 
 ---
 
@@ -354,7 +391,8 @@ The system can't support outreach without these. **Collect them first** (§8, st
 ## 7. Database schema
 
 Designed so the **spreadsheet MVP** (one tab per table) and a later database
-use the same structure. Types are given for a relational database. In a
+use the same structure. **In the spreadsheet, the company name and the contact
+name act as keys** (they must be unique). The workbook flags duplicates. Types are given for a relational database. In a
 spreadsheet, IDs are row IDs and enums are dropdowns.
 
 ```
@@ -453,7 +491,7 @@ contacts
   company_id       FK companies
   name             text      not null
   title            text
-  role_category    enum      (from the who-to-contact cheat sheet)
+  role_category    enum      (§5.2; each value counts / doesn't count for Access 1)
   relationship     enum ('named','champion') default 'named'
   cbs_alumnus      enum ('yes','no','unknown')
   work_email       text      -- published or given to us only
@@ -500,6 +538,7 @@ interactions
   team_member_id   FK team_members
   date             date      not null
   channel          enum ('email','linkedin','call','meeting','event','other')
+  direction        enum ('sent_by_us','received_from_them','two_way')
   summary          text      -- ≤280
   outcome          enum ('positive','neutral','negative','no_reply')
 
@@ -530,7 +569,14 @@ so they can't go out of sync.
 - **A check of CBS's rules** for student-organisation sponsorships and outreach.
 - A one-page media kit built from the above. Useful in every conversation, system or not.
 
-### Step 2 — Build the spreadsheet MVP (1–2 days)
+### Step 2 — Build the spreadsheet MVP (done: template ready)
+
+**Built:** [`template/CBS-Talks-Partnerships.xlsx`](../template/CBS-Talks-Partnerships.xlsx),
+generated by [`tools/build_workbook.py`](../tools/build_workbook.py). It contains
+fictional example rows marked "(example)". Delete them before real use.
+After importing it into Google Sheets, check once that the dropdowns and the
+Work Queue still work. Below is what the template implements:
+
 - Google Sheet in a CBS Talks shared drive (not a personal drive). One tab per
   table in §7, with dropdowns for enums.
 - Formula tabs: `Fit & Access` (F4, Fit, Access, quadrant), `Work queue`
