@@ -112,6 +112,7 @@ contacts count only once logged as an Interaction.
 | **100** | Named person with a **confirmed** responsibility for student engagement or sponsorship (they said so, or it's in their role description) **and** a contact route |
 
 **Source:** **Assisted** (LinkedIn role search, company website, conversations).
+Derived from the Contact Plan ([`contact-discovery-layer.md`](contact-discovery-layer.md) §4).
 Default 0 until searched. **Cap:** if O2 = 0, OLS is capped at 60. A high
 likelihood needs a target.
 

@@ -142,7 +142,7 @@ reads, never what it claims.
 | | |
 |---|---|
 | **Source** | Strongest **[V]** need (D3) + **[V]** timing trigger (D9) + entry offer (field 4) + contact path (D9 / Person records) |
-| **Structure** | **Hook** (a verified fact about them) → **Value** (what we offer for that need) → **Ask** (the entry offer, small and concrete) → **Path** (who reaches out, through whom) |
+| **Structure** | **Hook** (a verified fact about them) → **Value** (what we offer for that need) → **Ask** (the entry offer, small and concrete) → **Path** (who reaches out, through whom; taken from the Contact Plan in [`contact-discovery-layer.md`](contact-discovery-layer.md)) |
 | **Hard rule** | The opening angle may **only state [V] facts about the company.** Inferences can shape the angle but must never be stated *to the company*. Telling a company "you struggle to attract students" based on our inference is both risky and presumptuous |
 | **Fallback** | No verified hook → "No opening angle yet: we have no verified fact to open with. Research: <top missing item>." Don't fall back to generic flattery |
 | **Style** | Two to three sentences, written as a first message, not a slogan. No buzzwords (§5) |
