@@ -2,6 +2,11 @@
 
 **Design proposal, v0.1 (2026-10-05). No application code yet.**
 
+> **Update:** the dimensions, weights and calculation in §3–§5 are replaced by
+> [`scoring-framework.md`](scoring-framework.md) (the CBS Talks Partnership
+> Priority Score). The critique, architecture, data model, information plan,
+> bias analysis and MVP below still apply.
+
 This document proposes the architecture, data model, scoring dimensions,
 methodology, data collection plan, known weaknesses and an MVP for a
 partnership intelligence tool for CBS Talks.
