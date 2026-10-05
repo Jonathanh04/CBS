@@ -4,7 +4,8 @@
 [`partnership-scoring-design.md`](partnership-scoring-design.md) (dimensions,
 weights, calculation). The architecture, data model, information plan, bias
 analysis and MVP in that document still apply. Where they refer to "criteria",
-read "dimensions" from this document.
+read "dimensions" from this document. How scores are explained to users is
+specified in [`explainability-layer.md`](explainability-layer.md).
 
 ---
 
@@ -562,7 +563,7 @@ A card for Nordlys would open like this:
 > Financial 66 · Student 70 · Speaker 58 · Recruitment 81 · Long-term 75 · Outreach 44
 > **Biggest contributors to Priority:** Partner Need +13.0 (hires ~20 business graduates/yr, absent from student rankings *[Jobindex Aug 2026; ranking report 2026]*) · Student Relevance +11.3 · Strategic Alignment +9.8
 > **Holding it back:** Outreach 25 (no contact; nearest path: alumnus known to a board member) · Speaker 50 (COO identified, no talk recordings found)
-> **Adjustments:** none · **Coverage** 100% · **Low-confidence:** D7
+> **Adjustments:** none · **Coverage** 100% · **Low-confidence:** D4, D7
 > **Next step:** introduction via the alumnus → propose a supply-chain case workshop in spring
 
 ---
