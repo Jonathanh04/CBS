@@ -439,6 +439,10 @@ semester).
 
 ### 6.4 Step 4: Recommended partnership type and offer
 
+> **Replaced** by the Partnership Recommendation Engine
+> ([`recommendation-engine.md`](recommendation-engine.md)). The rule below is
+> kept only as a simplified fallback for the MVP spreadsheet.
+
 | Rule (checked in order) | Recommendation |
 |---|---|
 | F ≥ 70 **and** at least two of B, D, E ≥ 60 | **Strategic / multi-year partner** (target) |

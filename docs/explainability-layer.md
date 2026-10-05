@@ -107,7 +107,7 @@ reads, never what it claims.
 
 | | |
 |---|---|
-| **Source** | Recommendation rule (framework §6.4) |
+| **Source** | Partnership Recommendation Engine ([`recommendation-engine.md`](recommendation-engine.md)): verdict, primary, secondary, target, why / why not |
 | **Shows** | **Target type + entry offer + the rule that produced it**: "Strategic partner (target): Long-term 75 ≥ 70, Financial 66 and Recruitment 81 ≥ 60. Entry: case workshop, because Outreach is 44 (< 50)." |
 | **Fallback** | If the company is provisional (coverage < 70%): "No recommendation yet. Research D4–D7 first." The system doesn't guess a type from incomplete data |
 
