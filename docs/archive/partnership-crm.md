@@ -254,7 +254,7 @@ opportunities have no EPV; they're reported as **expected commitments**
 ## 7. Prototype
 
 A clickable dashboard prototype with **fictional sample data** is in
-[`prototype/pipeline-dashboard.html`](../prototype/pipeline-dashboard.html)
+[`prototype/pipeline-dashboard.html`](prototype/pipeline-dashboard.html)
 (also published as a private artifact). It shows every calculation in this document working on
 example rows:
 - probability with its breakdown on hover
