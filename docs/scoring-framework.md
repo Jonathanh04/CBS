@@ -355,6 +355,10 @@ subjective and the most size-correlated dimension.
 
 ### D9 — Outreach Likelihood & CBS Proximity (weight 12)
 
+> **Replaced:** D9 = the Outreach Likelihood Score
+> ([`outreach-likelihood-and-matrix.md`](outreach-likelihood-and-matrix.md)), and
+> sub-score G = the same score. The definitions and scoring aid below are superseded.
+
 *How likely is a successful approach, and how soon?*
 
 | Score | Exact definition |

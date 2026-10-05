@@ -282,6 +282,10 @@ Each **Not recommended** type gets a **Why not** (the failed conditions) and a
 
 ## 5. Worked examples
 
+> G values below use the Outreach Likelihood Score
+> ([`outreach-likelihood-and-matrix.md`](outreach-likelihood-and-matrix.md) §6.1).
+> Only MegaBrand and Kobber Hotels changed as a result.
+
 All companies are **fictional**, and the ProServ ratings are **hypothetical**.
 I checked every number below with a short script that applies these rules
 exactly. Objectives profile as in §2.4: Financial High, In-kind High,
@@ -372,13 +376,13 @@ needs at 2). It isn't *ready*: there is no relationship yet and no verified
 budget, so it is the target, not the ask.
 
 ### 5.5 MegaBrand A/S, a top student employer that doesn't need us
-Scores: A 55 (capped; D3 = 25) · G 44 · Tier C
+Scores: A 55 (capped; D3 = 25) · G 62.5 (Outreach Likelihood Score) · Tier C / Q3
 
 ```
 Verdict:    OPPORTUNISTIC
 Primary:    Recruitment partner — one-off (adj. 81)
 Secondary:  Content partner — one-off (adj. 80)
-Secondary:  One-off event sponsor — after first collaboration (adj. 74)
+Secondary:  One-off event sponsor — ready now (adj. 74; G ≥ 50 under the Outreach Likelihood Score)
 Add-on:     In-kind: venue (adj. 70)
 Also possible: Speaker partner (73), Networking partner (55)
 Not recommended: Annual strategic (F 45; only weak needs, none at 2)
@@ -390,11 +394,12 @@ don't spend scarce outreach time on them.
 
 ### 5.6 Kobber Hotels, a hotel group with venues
 D1–D9: 50, 50, 50, 25, 50, 25, 75, 50, 75 · Capabilities: inkind 2 (venue, catering), network 1
-Scores: A 50 · Fit 46 · Tier D
+Scores: A 47 · Fit 46 · G 48.5 (Outreach Likelihood Score) · Tier D / Q4
 
 ```
 Verdict:    NARROW OPPORTUNITY
-Primary:    In-kind partner — recurring (adj. 100: venue + catering, In-kind need High)
+Primary:    In-kind partner — one-off pilot (adj. 100: venue + catering, In-kind need High;
+            recurring once G ≥ 50)
 Also possible: Recruitment partner (50)
 Not recommended: Event sponsor — no budget evidence (D6 = 25)
 ```
