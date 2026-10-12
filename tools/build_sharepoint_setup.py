@@ -23,12 +23,12 @@ D = date(2026, 10, 12)
 # list name -> [(column, example value)]. "Title" is SharePoint's built-in column.
 LISTS = {
     "Companies": [
-        ("Title", "Nordlys Logistics (example)"), ("Website", "nordlys.example"), ("CVR", "12345678"),
-        ("Industry", "Shipping, logistics & transport"), ("SizeBand", "250-999"), ("Owner", "A.K. (example)"),
+        ("Title", "Nordlys Logistics (example)"), ("Website", "Nordlys website (example)"), ("CVR", "CVR (example)"),
+        ("Industry", "Shipping, logistics & transport"), ("SizeBand", "Unknown"), ("Owner", "A.K. (example)"),
         ("F1", 1), ("F1Reason", "Relevant to supply-chain students"), ("F1Source", ""),
         ("F2", 1), ("F2Reason", "Supply-chain topic, no named speaker yet"), ("F2Source", ""),
-        ("F3", 2), ("F3Reason", "About 20 graduate postings this year"), ("F3Source", "https://example.org/jobs"),
-        ("F5", 2), ("F5Reason", "Annual graduate programme"), ("F5Source", "https://example.org/graduates"),
+        ("F3", 2), ("F3Reason", "About 20 graduate postings this year"), ("F3Source", "Company jobs page (example)"),
+        ("F5", 2), ("F5Reason", "Annual graduate programme"), ("F5Source", "Company careers page (example)"),
         ("FitReviewedOn", D), ("IntroPath", "CBS alumnus in their talent team, via A.K. (agreed)"),
         ("SpecificNeed", ""), ("PathInProgress", "No"), ("PathAction", ""), ("PathStartedOn", D),
         ("Notes", ""), ("DoNotContact", "No"), ("DoNotContactReason", ""),
@@ -62,7 +62,7 @@ LISTS = {
     "Evidence": [
         ("Title", "Nordlys Logistics (example)"), ("Criterion", "F3 Reason to work with us"),
         ("Statement", "About 20 graduate postings for business profiles this year"),
-        ("Label", "Verified fact"), ("Reasoning", ""), ("SourceUrl", "https://example.org/jobs"),
+        ("Label", "Verified fact"), ("Reasoning", ""), ("SourceUrl", "Company jobs page (example)"),
         ("AiDrafted", "No"), ("CheckedBy", "A.K. (example)"), ("CheckedOn", D),
     ],
     "TeamMembers": [
@@ -102,6 +102,7 @@ def sheet(name, headers, rows):
         c.font = head_font
         c.fill = head_fill
         ws.column_dimensions[get_column_letter(i)].width = max(14, min(40, len(h) + 6))
+    rows = [[("(example)" if v == "" else v) for v in row] for row in rows]
     for r, row in enumerate(rows, start=2):
         for i, v in enumerate(row, start=1):
             c = ws.cell(row=r, column=i, value=None if v == "" else v)
@@ -120,8 +121,11 @@ lines = [
     "",
     "1. Upload this file to the CBS Talks Team / SharePoint site (Documents).",
     "2. In the site: New -> List -> From Excel -> pick this file -> pick one table (e.g. 'Companies').",
-    "3. Check the column types SharePoint suggests: dates must be 'Date and time', numbers 'Number',",
-    "   long text (Notes, Summary, Statement, Includes) may be 'Multiple lines of text', all else 'Single line of text'.",
+    "3. Before clicking Create, check each column's type in the panel on the right:",
+    "   - Number: F1, F2, F3, F5, AmountDKK, ProposedDKK, AgreedDKK, PriceDKK, CapacityPerSemester, Attendance",
+    "   - Date and time: columns ending in On, Date, Due, Until, Start or End (e.g. FitReviewedOn, NextActionDue, TermStart)",
+    "   - Everything else: Single line of text (change 'Hyperlink', 'Person', 'Choice' or 'Yes/No' to Single line of text)",
+    "   If SharePoint says a row was omitted, that's only the example row: check the column types and carry on.",
     "4. Name the list exactly like the table (Companies, CommercialEvidence, Contacts, Opportunities,",
     "   Interactions, Evidence, TeamMembers, Packages, Themes, Events, Settings). Repeat for every table.",
     "5. Delete the example rows (marked '(example)') in each list. Keep all Settings rows and edit their values.",
