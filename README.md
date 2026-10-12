@@ -12,6 +12,7 @@ board handovers.
 | Document | Purpose |
 |---|---|
 | [`docs/lean-spec.md`](docs/lean-spec.md) | Model (Fit + Access), priority logic, CRM workflow, fields, schema, dashboard, implementation plan |
+| [`docs/m365-team-tool.md`](docs/m365-team-tool.md) | Plan for the Microsoft 365 team tool (Excel workbook + Partnership Desk) |
 | [`docs/cheat-sheets/partnership-type.md`](docs/cheat-sheets/partnership-type.md) | Which partnership type and package to propose |
 | [`docs/cheat-sheets/who-to-contact.md`](docs/cheat-sheets/who-to-contact.md) | Which role to contact, by type and company size |
 | [`docs/cheat-sheets/conversations-and-outreach.md`](docs/cheat-sheets/conversations-and-outreach.md) | Questions, objections to prepare for, outreach and GDPR rules |

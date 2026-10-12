@@ -601,6 +601,10 @@ Work Queue still work. Below is what the template implements:
 - **Week 8 check:** is the sheet still updated? Which columns are always empty?
   Which flags did people ignore? Remove what isn't used.
 
+> **Update 2026-10-12:** the tool decision has been made early. The system becomes a
+> Microsoft 365 team tool built on this workbook. See [`m365-team-tool.md`](m365-team-tool.md).
+> The table below is kept for reference.
+
 ### Step 6 — Decide on the tool (end of semester)
 | If the sheet… | Then |
 |---|---|

@@ -11,6 +11,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.workbook.defined_name import DefinedName
 from openpyxl.comments import Comment
+from openpyxl.worksheet.table import Table, TableStyleInfo
 
 OUT = "template/CBS-Talks-Partnerships.xlsx"
 N = 500          # data rows prepared per table
@@ -118,6 +119,12 @@ def fill_rows(ws, cols, L, first=3, last=N + 2):
             dv.errorTitle = "Not in the list"
             ws.add_data_validation(dv)
             dv.add(f"{col}{first}:{col}{last}")
+    # Excel table over the data block: Microsoft 365 tools (Office add-ins,
+    # Power Automate, Power Apps) read and write data through named tables.
+    tname = "tbl" + "".join(ch for ch in ws.title if ch.isalnum())
+    table = Table(displayName=tname, ref=f"A2:{get_column_letter(len(cols))}{last}")
+    table.tableStyleInfo = TableStyleInfo(name="TableStyleLight1", showRowStripes=False)
+    ws.add_table(table)
 
 
 def rng(sheet, col):
