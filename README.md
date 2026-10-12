@@ -14,6 +14,7 @@ board handovers.
 | [`docs/lean-spec.md`](docs/lean-spec.md) | Model (Fit + Access), priority logic, CRM workflow, fields, schema, dashboard, implementation plan |
 | [`docs/m365-team-tool.md`](docs/m365-team-tool.md) | Plan for the Microsoft 365 team tool (Power Apps + SharePoint lists) |
 | [`docs/powerapps-data-model.md`](docs/powerapps-data-model.md) | SharePoint lists and columns for the Power Apps version |
+| [`powerapps/step3-app-skeleton.md`](powerapps/step3-app-skeleton.md) | Step 3: create the app, load the lists, calculate Fit/Access/quadrant, checkpoint |
 | [`powerapps/sharepoint-lists-setup.xlsx`](powerapps/sharepoint-lists-setup.xlsx) | File that creates the SharePoint lists (New → List → From Excel) |
 | [`docs/cheat-sheets/partnership-type.md`](docs/cheat-sheets/partnership-type.md) | Which partnership type and package to propose |
 | [`docs/cheat-sheets/who-to-contact.md`](docs/cheat-sheets/who-to-contact.md) | Which role to contact, by type and company size |

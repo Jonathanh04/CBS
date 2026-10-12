@@ -147,3 +147,77 @@ sheet("Settings", ["Title", "SettingValue"], [[k, v] for k, v in SETTINGS])
 
 wb.save(OUT)
 print("saved", OUT)
+
+
+# ---------------------------------------------------------------------------------------------
+# Test data for the step 3 checkpoint (powerapps/step3-app-skeleton.md): paste into each list's
+# grid view. Column order matches the lists. Expected results are in the step 3 guide.
+TEST_OUT = "powerapps/step3-test-data.xlsx"
+T = date(2026, 10, 3)
+COLS = {name: [c for c, _ in cols] for name, cols in LISTS.items()}
+
+
+def row(name, **vals):
+    unknown = set(vals) - set(COLS[name])
+    assert not unknown, (name, unknown)
+    return [vals.get(c, "") for c in COLS[name]]
+
+
+TEST = {
+    "Companies": [
+        row("Companies", Title="ProServ (test)", Owner="A.K. (test)", F1=2, F2=2, F3=2, F5=2, PathInProgress="No", DoNotContact="No"),
+        row("Companies", Title="MegaBrand (test)", Owner="A.K. (test)", F1=2, F2=1, F3=1, F5=1, PathInProgress="Yes",
+            PathAction="Ask alumni network for an introduction", PathStartedOn=T, DoNotContact="No"),
+        row("Companies", Title="Nordlys (test)", Owner="A.K. (test)", F1=1, F2=1, F3=2, F5=2,
+            IntroPath="Alumnus in their talent team (test)", PathInProgress="No", DoNotContact="No"),
+        row("Companies", Title="Fjord (test)", Owner="A.K. (test)", F1=1, F2=2, F3=1, F5=1, PathInProgress="No", DoNotContact="No"),
+        row("Companies", Title="Kobber (test)", Owner="A.K. (test)", F1=0, F2=0, F3=1, F5=1, SpecificNeed="Venue for an autumn event",
+            PathInProgress="No", DoNotContact="No"),
+        row("Companies", Title="Gamma (test)", Owner="A.K. (test)", F1=0, F2=0, F3=0, F5=0, PathInProgress="No", DoNotContact="No"),
+        row("Companies", Title="Vesterled (test)", Owner="A.K. (test)", F1=2, PathInProgress="No", DoNotContact="No"),
+    ],
+    "CommercialEvidence": [
+        row("CommercialEvidence", Title="ProServ (test)", EvidenceType="Previous CBS Talks spend", Description="Paid last year", AmountDKK=40000, ObservedYear="2025"),
+        row("CommercialEvidence", Title="MegaBrand (test)", EvidenceType="Sponsors student organisations", Description="Partner of two CBS organisations"),
+        row("CommercialEvidence", Title="Nordlys (test)", EvidenceType="None found (checked)", Description="Checked partner pages"),
+        row("CommercialEvidence", Title="Fjord (test)", EvidenceType="None found (checked)", Description="Checked partner pages"),
+        row("CommercialEvidence", Title="Kobber (test)", EvidenceType="Sponsors similar events", Description="Hosts local business events"),
+        row("CommercialEvidence", Title="Gamma (test)", EvidenceType="None found (checked)", Description="Checked partner pages"),
+    ],
+    "Contacts": [
+        row("Contacts", Title="Sofie L. (test)", Company="ProServ (test)", RoleCategory="Employer branding", Relationship="Champion", Source="Test", LeftCompany="No", DoNotContact="No"),
+        row("Contacts", Title="Peter N. (test)", Company="MegaBrand (test)", RoleCategory="University relations", Relationship="Named", Source="Test", LeftCompany="No", DoNotContact="No"),
+        row("Contacts", Title="Emil B. (test)", Company="Fjord (test)", RoleCategory="Founder / CEO (small company)", Relationship="Champion", Source="Test", LeftCompany="No", DoNotContact="No"),
+        row("Contacts", Title="Ida K. (test)", Company="Kobber (test)", RoleCategory="Marketing", Relationship="Named", Source="Test", LeftCompany="No", DoNotContact="No"),
+    ],
+    "Interactions": [
+        row("Interactions", Title="Kobber (test)", InteractionDate=T, Contact="Ida K. (test)", TeamMember="A.K. (test)", Channel="Email",
+            Direction="Received from them", Summary="Interested in hosting", Outcome="Positive"),
+    ],
+}
+
+tw = Workbook()
+tw.remove(tw.active)
+info = tw.create_sheet("Read me")
+for i, t in enumerate([
+    "Step 3 test data (fictional). For each tab: open the list with the same name in SharePoint,",
+    "click 'Edit in grid view', copy the rows below the header (not the header) and paste them into the first empty row.",
+    "Expected results are in powerapps/step3-app-skeleton.md. Delete all '(test)' rows when the checkpoint passes.",
+], start=1):
+    info.cell(row=i, column=1, value=t).font = Font(name=FONT)
+info.column_dimensions["A"].width = 120
+for name, rows in TEST.items():
+    ws = tw.create_sheet(name)
+    for i, h in enumerate(COLS[name], start=1):
+        c = ws.cell(row=1, column=i, value=h)
+        c.font = head_font
+        c.fill = head_fill
+        ws.column_dimensions[get_column_letter(i)].width = max(12, min(30, len(h) + 4))
+    for r, vals in enumerate(rows, start=2):
+        for i, v in enumerate(vals, start=1):
+            c = ws.cell(row=r, column=i, value=None if v == "" else v)
+            c.font = Font(name=FONT)
+            if isinstance(v, date):
+                c.number_format = "yyyy-mm-dd"
+tw.save(TEST_OUT)
+print("saved", TEST_OUT)
