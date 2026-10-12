@@ -3,6 +3,9 @@
 // 2) Reads the thresholds from the Settings list (with safe defaults).
 // 3) Calculates F4, Fit, Access, quadrant, last contact and open deals per company into colScored
 //    (rules from docs/lean-spec.md §3).
+// 4) Flags every deal (renewal due, overdue, no reply, due this week, missing next action)
+//    into colOppFlags and builds the work queue (lean-spec §3.4–3.5):
+//    colQueueDeals (renewals + follow-ups) and colQueueCompanies (priority, paths, quick wins).
 // Swedish-locale separators: ";" between arguments and record fields, ";;" between actions.
 Concurrent(
     ClearCollect(colCompanies; Companies);
@@ -73,10 +76,104 @@ ClearCollect(
                             "Low Priority"
                         );
                         LastContact: Max(Filter(colInteractions; Title = c.Title); InteractionDate);
-                        OpenOpps: CountRows(Filter(colOpps; Title = c.Title && Stage in ["Planned"; "Contacted"; "Meeting"; "Proposal sent"; "Negotiation"]))
+                        OpenOpps: CountRows(Filter(colOpps; Title = c.Title && Stage in ["Planned"; "Contacted"; "Meeting"; "Proposal sent"; "Negotiation"]));
+                        IntroPath: c.IntroPath;
+                        SpecificNeed: c.SpecificNeed;
+                        PathInProgress: c.PathInProgress;
+                        PathAction: c.PathAction;
+                        PathStartedOn: c.PathStartedOn
                     }
                 )
             )
+        )
+    )
+);;
+ClearCollect(
+    colOppFlags;
+    ForAll(
+        colOpps As o;
+        With(
+            {
+                isOpen: o.Stage in ["Planned"; "Contacted"; "Meeting"; "Proposal sent"; "Negotiation"];
+                lastSent: Max(Filter(colInteractions; Title = o.Title && Direction = "Sent by us"); InteractionDate);
+                lastReply: Max(Filter(colInteractions; Title = o.Title && Direction <> "Sent by us"); InteractionDate)
+            };
+            With(
+                {
+                    flag: If(
+                        o.Stage = "Won" && !IsBlank(o.RenewalDate)
+                            && o.RenewalDate <= DateAdd(Today(); gRenewalDays; TimeUnit.Days)
+                            && IsEmpty(Filter(colOpps; Title = o.Title && IsRenewal = "Yes"
+                                && Stage in ["Planned"; "Contacted"; "Meeting"; "Proposal sent"; "Negotiation"])); "Renewal due";
+                        !isOpen; "";
+                        IsBlank(o.NextAction) || IsBlank(o.NextActionDue); "Missing next action";
+                        o.NextActionDue < Today(); "Overdue";
+                        o.Stage = "Contacted" && !IsBlank(lastSent)
+                            && lastSent <= DateAdd(Today(); -gNoReplyDays; TimeUnit.Days)
+                            && (IsBlank(lastReply) || lastReply < lastSent); "No reply";
+                        o.NextActionDue <= DateAdd(Today(); 7; TimeUnit.Days); "Due this week";
+                        ""
+                    )
+                };
+                {
+                    OppID: o.ID;
+                    Company: o.Title;
+                    OppType: o.OppType;
+                    Stage: o.Stage;
+                    Owner: o.Owner;
+                    NextAction: o.NextAction;
+                    Due: o.NextActionDue;
+                    RenewalDate: o.RenewalDate;
+                    Satisfaction: o.Satisfaction;
+                    Flag: flag;
+                    Key: Switch(flag; "Renewal due"; 1; "Overdue"; 2; "No reply"; 3; "Due this week"; 4; 5) * 100000
+                        + DateDiff(Date(2020; 1; 1); Coalesce(If(flag = "Renewal due"; o.RenewalDate; o.NextActionDue); Date(2099; 12; 31)); TimeUnit.Days)
+                }
+            )
+        )
+    )
+);;
+ClearCollect(colQueueDeals; Sort(Filter(colOppFlags; Flag <> ""); Key));;
+ClearCollect(colRenewCos; Filter(colOppFlags; Flag = "Renewal due"));;
+ClearCollect(
+    colQueueCompanies;
+    AddColumns(
+        Filter(colScored; Quadrant = "Priority" && OpenOpps = 0 && !(Company in colRenewCos.Company));
+        Why; "Priority: no deal yet";
+        NextStep; "Plan the first ask (cheat sheet) and create a deal";
+        Key; 100000 + (10 - Fit) * 10 + (4 - Access)
+    )
+);;
+Collect(
+    colQueueCompanies;
+    AddColumns(
+        Filter(colScored; PathInProgress = "Yes");
+        Why; "Building a path";
+        NextStep; Coalesce(PathAction; "Add a path action");
+        Key; 200000 + If(IsBlank(PathStartedOn); 0; DateDiff(Date(2020; 1; 1); PathStartedOn; TimeUnit.Days))
+    )
+);;
+Collect(
+    colQueueCompanies;
+    AddColumns(
+        Filter(colScored; Quadrant = "Quick Win" && !IsBlank(SpecificNeed) && OpenOpps = 0);
+        Why; "Quick win for a need";
+        NextStep; "Need: " & SpecificNeed;
+        Key; 300000 + (10 - Fit) * 10 + (4 - Access)
+    )
+);;
+If(
+    CountRows(Filter(colScored; PathInProgress = "Yes")) < gPathCap;
+    Collect(
+        colQueueCompanies;
+        AddColumns(
+            FirstN(
+                Sort(Filter(colScored; Quadrant = "Build a Path" && PathInProgress <> "Yes"); Fit; SortOrder.Descending);
+                gPathCap - CountRows(Filter(colScored; PathInProgress = "Yes"))
+            );
+            Why; "Path candidate";
+            NextStep; "Decide whether to start a path";
+            Key; 400000 + (10 - Fit) * 10
         )
     )
 )

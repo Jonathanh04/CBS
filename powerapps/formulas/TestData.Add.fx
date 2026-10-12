@@ -14,7 +14,7 @@ Collect(
 );;
 Collect(
     CommercialEvidence;
-    {Title: "ProServ (test)"; EvidenceType: "Previous CBS Talks spend"; Description: "Paid last year"; AmountDKK: 40000; ObservedYear: "2025"};
+    {Title: "ProServ (test)"; EvidenceType: "Previous CBS Talks spend"; Description: "Paid last year"; AmountDKK: 40000};
     {Title: "MegaBrand (test)"; EvidenceType: "Sponsors student organisations"; Description: "Partner of two CBS organisations"};
     {Title: "Nordlys (test)"; EvidenceType: "None found (checked)"; Description: "Checked partner pages"};
     {Title: "Fjord (test)"; EvidenceType: "None found (checked)"; Description: "Checked partner pages"};
