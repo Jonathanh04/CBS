@@ -9,16 +9,19 @@ Copenhagen Business School). It helps the Partnerships Manager decide which comp
 work on each week, record why, and keep partnership knowledge across yearly board handovers.
 
 **Status:** designed, not yet in real use. **Decision (2026-10-12): it becomes a team tool in
-Microsoft 365 only**: the Excel workbook in the CBS Talks Team/SharePoint is the source of truth,
-and the Partnership Desk UI is built on top of it (recommended: an Excel add-in). The plan,
-options and open checks are in `docs/m365-team-tool.md`.
+Microsoft 365 only**, built as a **Power Apps canvas app** with its data in **SharePoint lists**
+in the CBS Talks Team site (Excel add-ins appear blocked at CBS). Plan and steps:
+`docs/m365-team-tool.md`; list schema: `docs/powerapps-data-model.md`.
 
 ## Where things are
 
 | Path | What it is |
 |---|---|
 | `docs/lean-spec.md` | **The only specification to build from.** Model, rules, CRM workflow, schema, dashboard, plan |
-| `docs/m365-team-tool.md` | Microsoft 365 team-tool plan: architecture, options, checks, steps |
+| `docs/m365-team-tool.md` | Microsoft 365 team-tool plan: decisions, architecture, steps |
+| `docs/powerapps-data-model.md` | SharePoint lists and columns for the Power Apps version |
+| `powerapps/` | Power Apps build material: list setup workbook, formulas, build guides |
+| `tools/build_sharepoint_setup.py` | Generates `powerapps/sharepoint-lists-setup.xlsx` |
 | `docs/cheat-sheets/` | One-page guides: partnership type, who to contact, conversations & outreach rules |
 | `docs/audit.md` | Why the earlier, complex design was replaced |
 | `docs/archive/` | **Superseded.** Background reasoning only: never build from these |
@@ -71,7 +74,10 @@ no `FILTER`, `SORT`, `UNIQUE`, `XLOOKUP` or other spilling functions.
 
 ## Don't
 
-- Don't move the data out of Microsoft 365 or add a second data store: the workbook's Excel
-  tables (`tblCompanies`, `tblOpportunities`, …) are the source of truth. Don't rename or remove
-  table columns without updating the generator, the Desk and the spec together.
+- Don't move the data out of Microsoft 365 or add a second data store: the SharePoint lists are
+  the source of truth. Don't rename or remove list columns without updating
+  `docs/powerapps-data-model.md`, the setup generator and the app formulas together.
+- Power Apps formulas in `powerapps/` use Swedish-locale separators (`;` between arguments,
+  `;;` between actions) because that is how the maintainer's Power Apps is set up.
+- The GitHub repository is private (CBS Talks team only).
 - Don't reintroduce ideas from `docs/archive/` without the user asking.

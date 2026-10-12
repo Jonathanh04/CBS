@@ -602,7 +602,8 @@ Work Queue still work. Below is what the template implements:
   Which flags did people ignore? Remove what isn't used.
 
 > **Update 2026-10-12:** the tool decision has been made early. The system becomes a
-> Microsoft 365 team tool built on this workbook. See [`m365-team-tool.md`](m365-team-tool.md).
+> Microsoft 365 team tool: a Power Apps app with its data in SharePoint lists. See
+> [`m365-team-tool.md`](m365-team-tool.md) and [`powerapps-data-model.md`](powerapps-data-model.md).
 > The table below is kept for reference.
 
 ### Step 6 — Decide on the tool (end of semester)
