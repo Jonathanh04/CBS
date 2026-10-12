@@ -1,0 +1,409 @@
+<title>CBS Talks Partnership Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: operations dashboard — filter row, KPI strip, action list beside stage chart, then priority and closed-deal tables. */
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --surface-2: #eef1f5;
+  --ink: #141820;
+  --muted: #5a6170;
+  --line: #dde2e9;
+  --accent: #1f3f73;
+  --series: #2a78d6;
+  --series-soft: #cde2fb;
+  --good: #0ca30c;
+  --warn: #fab219;
+  --crit: #d03b3b;
+  --crit-ink: #b42f2f;
+  --font-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101318; --surface: #181c22; --surface-2: #20252d; --ink: #eef1f5; --muted: #a3aab7;
+    --line: #2b313b; --accent: #9fbcf0; --series: #3987e5; --series-soft: #1c3557; --crit-ink: #f08a8a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101318; --surface: #181c22; --surface-2: #20252d; --ink: #eef1f5; --muted: #a3aab7;
+  --line: #2b313b; --accent: #9fbcf0; --series: #3987e5; --series-soft: #1c3557; --crit-ink: #f08a8a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.45; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 48px; display: grid; gap: 20px; }
+h1, h2 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.02rem; font-weight: 600; }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+
+header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.title-block { display: grid; gap: 4px; }
+.sample { display: inline-flex; align-items: center; gap: 6px; border: 1px dashed var(--muted); color: var(--muted); border-radius: 999px; padding: 3px 10px; font-size: 0.78rem; font-weight: 500; }
+.filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.filters label { display: grid; gap: 3px; font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+select { font: inherit; font-size: 0.9rem; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 28px 6px 10px; min-width: 150px; }
+select:focus-visible, .tip-target:focus-visible { outline: 2px solid var(--series); outline-offset: 2px; }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.kpi .value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 1.55rem; font-weight: 500; letter-spacing: -0.02em; }
+.kpi .value small { font-size: 0.8rem; color: var(--muted); font-weight: 400; letter-spacing: 0; }
+.kpi .note { font-size: 0.8rem; color: var(--muted); }
+.meter { height: 6px; border-radius: 3px; background: var(--series-soft); overflow: hidden; }
+.meter > span { display: block; height: 100%; background: var(--series); border-radius: 3px; }
+.flag { display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; font-weight: 600; }
+.flag .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.flag.crit { color: var(--crit-ink); } .flag.crit .dot { background: var(--crit); }
+.flag.ok { color: var(--muted); } .flag.ok .dot { background: var(--good); }
+
+.grid-2 { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 20px; }
+@media (max-width: 860px) { .grid-2 { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+
+/* follow-ups */
+.fu-list { display: grid; gap: 0; }
+.fu { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 0; border-top: 1px solid var(--line); }
+.fu:first-child { border-top: 0; }
+.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2px 8px; font-size: 0.74rem; font-weight: 600; white-space: nowrap; }
+.pill.overdue { background: color-mix(in srgb, var(--crit) 14%, transparent); color: var(--crit-ink); }
+.pill.soon { background: color-mix(in srgb, var(--warn) 22%, transparent); color: var(--ink); }
+.pill .ic { font-family: var(--font-mono); font-weight: 600; }
+.fu .co { font-weight: 600; }
+.fu .act { color: var(--muted); font-size: 0.86rem; }
+.fu .meta { text-align: right; font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+.empty { color: var(--muted); font-size: 0.9rem; padding: 8px 0; }
+
+/* stage chart */
+.stages { display: grid; gap: 14px; }
+.stage-group { display: grid; gap: 6px; }
+.stage-row { display: grid; grid-template-columns: 130px minmax(0, 1fr) 96px; gap: 10px; align-items: center; }
+.stage-row .name { font-size: 0.86rem; }
+.bar-track { position: relative; height: 18px; }
+.bar { height: 18px; background: var(--series); border-radius: 0 4px 4px 0; min-width: 2px; }
+.bar.zero { background: var(--line); }
+.bar-label { position: absolute; top: 0; font-family: var(--font-mono); font-size: 0.78rem; line-height: 18px; padding-left: 6px; color: var(--ink); }
+.stage-row .val { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 0.8rem; color: var(--muted); }
+.axis-note { font-size: 0.78rem; color: var(--muted); }
+
+/* tables */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+th { text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; padding: 6px 10px 8px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.r, th.r { text-align: right; }
+td .sub { display: block; color: var(--muted); font-size: 0.76rem; }
+.q { display: inline-block; font-size: 0.72rem; font-weight: 600; border-radius: 4px; padding: 1px 6px; border: 1px solid var(--line); white-space: nowrap; }
+.q.Q1 { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.q.Q2 { border-color: var(--accent); color: var(--accent); }
+.rel { display: inline-flex; gap: 3px; align-items: center; vertical-align: middle; margin-right: 6px; }
+.rel i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+.rel i.on { background: var(--series); }
+.basis { font-size: 0.7rem; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }
+.tip-target { border-bottom: 1px dotted var(--muted); cursor: help; }
+
+.reasons { display: grid; gap: 6px; }
+.reason-row { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 0.84rem; }
+
+.noncash { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.nc { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 2px; }
+.nc .what { font-weight: 600; }
+
+footer { font-size: 0.8rem; color: var(--muted); display: grid; gap: 4px; max-width: 75ch; }
+
+#tip { position: fixed; z-index: 10; max-width: 300px; background: var(--ink); color: var(--bg); font-size: 0.8rem; line-height: 1.4; padding: 8px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 4px 14px rgb(0 0 0 / 0.18); }
+#tip .num { color: inherit; }
+@media (prefers-reduced-motion: no-preference) { .bar, .meter > span { transition: width 0.25s ease; } }
+@media (max-width: 520px) {
+  .stage-row { grid-template-columns: 104px minmax(0, 1fr) 76px; }
+  .fu { grid-template-columns: minmax(0, 1fr) auto; }
+  .fu .when { grid-column: 1 / -1; }
+  .reason-row { grid-template-columns: 130px minmax(0, 1fr); }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="title-block">
+      <span class="label">CBS Talks · Autumn semester 2026 · as of 5 Oct 2026</span>
+      <h1>Partnership Pipeline</h1>
+      <span class="sample">Prototype · fictional sample data · target is a placeholder</span>
+    </div>
+    <div class="filters">
+      <label for="f-owner">Responsible
+        <select id="f-owner"></select>
+      </label>
+      <label for="f-type">Partnership type
+        <select id="f-type"></select>
+      </label>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis" aria-label="Headline figures"></section>
+
+  <div class="grid-2">
+    <section class="panel" aria-labelledby="h-fu">
+      <div class="panel-head"><h2 id="h-fu">Follow-ups due</h2><span class="muted" id="fu-count"></span></div>
+      <div class="fu-list" id="fu"></div>
+    </section>
+    <section class="panel" aria-labelledby="h-st">
+      <div class="panel-head"><h2 id="h-st">Companies by stage</h2><span class="axis-note">bar = opportunities · right = cash value</span></div>
+      <div class="stages" id="stages"></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="h-pr">
+    <div class="panel-head"><h2 id="h-pr">Highest-priority prospects</h2><span class="axis-note">open opportunities by Priority Score · hover a probability to see how it was calculated</span></div>
+    <div class="table-wrap"><table id="prio"></table></div>
+  </section>
+
+  <div class="grid-2">
+    <section class="panel" aria-labelledby="h-won">
+      <div class="panel-head"><h2 id="h-won">Won partnerships</h2><span class="muted" id="won-sum"></span></div>
+      <div class="table-wrap"><table id="won"></table></div>
+    </section>
+    <section class="panel" aria-labelledby="h-lost">
+      <div class="panel-head"><h2 id="h-lost">Lost partnerships</h2><span class="muted" id="lost-sum"></span></div>
+      <div class="table-wrap"><table id="lost"></table></div>
+      <div class="label">Lost reasons</div>
+      <div class="reasons" id="reasons"></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="h-nc">
+    <div class="panel-head"><h2 id="h-nc">Non-cash and in-kind</h2><span class="axis-note">kept separate from cash totals</span></div>
+    <div class="noncash" id="noncash"></div>
+  </section>
+
+  <footer>
+    <span>Expected value = potential value × probability of closing. Probability = stage default + relationship (Champion +10, Warm +5, None −5 after contact) + past partnership ended well (+10) − ask above estimated tier (−10) − unresolved objection (−10), kept between half the stage default and the next stage's default (max 90%).</span>
+    <span>Pipeline totals include only Contacted → Negotiation. Estimated values use the cautious end of the Financial Potential tier and are estimates, not known budgets. All companies, people and amounts are fictional.</span>
+  </footer>
+</div>
+<div id="tip" role="tooltip" hidden></div>
+
+<script>
+const TODAY = new Date("2026-10-05T12:00:00");
+const TARGET = 120000;
+const STAGES = ["Prospect","Researching","Contact identified","Contacted","Meeting scheduled","Proposal sent","Negotiation","Won","Lost","Nurture"];
+const GROUPS = [["Research",["Prospect","Researching","Contact identified"]],["Active",["Contacted","Meeting scheduled","Proposal sent","Negotiation"]],["Closed",["Won","Lost"]],["Parked",["Nurture"]]];
+const ACTIVE = ["Contacted","Meeting scheduled","Proposal sent","Negotiation"];
+const RESEARCH = ["Prospect","Researching","Contact identified"];
+const DEFAULT_P = {"Prospect":2,"Researching":3,"Contact identified":5,"Contacted":10,"Meeting scheduled":20,"Proposal sent":40,"Negotiation":65,"Won":100,"Lost":0};
+const REL = {0:"None",25:"Cold",50:"Contact",75:"Warm",100:"Champion"};
+
+// Fictional sample opportunities. kind: cash | inkind | noncash. basis: estimated | proposed | agreed | none.
+const OPPS = [
+ {co:"ProServ",type:"Annual strategic partner",stage:"Negotiation",owner:"J.H.",contact:"Head of Employer Branding",kind:"cash",basis:"proposed",value:45000,rel:100,pastGood:true,last:"2026-09-29",next:"Send revised proposal incl. exclusivity option",due:"2026-10-08",A:89,quad:"Q1"},
+ {co:"Ravn Advisory",type:"Recurring event sponsor",stage:"Proposal sent",owner:"J.H.",contact:"Head of Marketing",kind:"cash",basis:"proposed",value:25000,rel:75,askAbove:true,estTier:"10–20k",last:"2026-09-22",next:"Follow-up call on proposal",due:"2026-10-06",A:78,quad:"Q1"},
+ {co:"MegaBrand A/S",type:"Recruitment partner",stage:"Contacted",owner:"M.S.",contact:"University Relations Manager",kind:"cash",basis:"estimated",value:20000,estTier:"20–50k",rel:25,last:"2026-09-18",next:"Second follow-up email",due:"2026-10-02",A:55,quad:"Q3"},
+ {co:"Fjord Ventures",type:"Speaker partner",stage:"Meeting scheduled",owner:"A.K.",contact:"Founder",kind:"noncash",units:"1 keynote",basis:"none",rel:100,last:"2026-10-01",next:"Meeting: confirm March keynote date",due:"2026-10-14",A:64.5,quad:"Q3",badge:"Fast-track: Speaker"},
+ {co:"Kobber Hotels",type:"In-kind partner",stage:"Proposal sent",owner:"L.M.",contact:"Events Manager",kind:"inkind",units:"Venue + catering, 1 evening",basis:"estimated",value:12000,rel:75,last:"2026-09-26",next:"Check venue availability for 19 Nov",due:"2026-10-09",A:46.6,quad:"Q4",badge:"Narrow opportunity: In-kind"},
+ {co:"Bølge Media",type:"Content partner",stage:"Meeting scheduled",owner:"M.S.",contact:"Head of Content",kind:"noncash",units:"Podcast series, 4 episodes",basis:"none",rel:50,last:"2026-09-30",next:"Meeting: podcast format",due:"2026-10-10",A:70,quad:"Q1"},
+ {co:"Lindholm Analytics",type:"Knowledge partner",stage:"Contacted",owner:"L.M.",contact:"Chief Economist",kind:"noncash",units:"Data for 1 debate",basis:"none",rel:25,last:"2026-09-30",next:"Follow up if no reply",due:"2026-10-14",A:66,quad:"Q2"},
+ {co:"Fyrtårn Capital",type:"Networking partner",stage:"Contacted",owner:"A.K.",contact:"Platform Manager",kind:"noncash",units:"Founder introductions",basis:"none",rel:0,last:"2026-09-15",next:"Try warm intro via Fjord founder",due:"2026-09-29",A:61,quad:"Q3"},
+ {co:"Nordlys Logistics",type:"Recruitment partner",stage:"Contact identified",owner:"A.K.",contact:"Talent Acquisition Manager (via alumnus)",kind:"cash",basis:"estimated",value:5000,estTier:"5–10k",rel:0,last:null,next:"Ask alumnus for introduction",due:"2026-10-03",A:68,quad:"Q2"},
+ {co:"Vesterled Insurance",type:"One-off event sponsor",stage:"Researching",owner:"M.S.",contact:null,kind:"cash",basis:"estimated",value:10000,estTier:"10–20k",rel:0,last:null,next:"Finish full assessment",due:"2026-10-12",A:72,quad:"Q2"},
+ {co:"Titan Industrial",type:"One-off event sponsor",stage:"Researching",owner:"M.S.",contact:null,kind:"cash",basis:"estimated",value:5000,estTier:"5–10k",rel:0,last:null,next:"Ask Danish HR about local budget",due:"2026-10-20",A:58,quad:"Q4"},
+ {co:"Havbrug Energy",type:"Not yet recommended",stage:"Prospect",owner:"Unassigned",contact:null,kind:"cash",basis:"none",rel:0,last:null,next:"Quick screen",due:"2026-10-15",A:44,quad:"—",badge:"Provisional"},
+ {co:"Søby Foods",type:"One-off event sponsor",stage:"Won",owner:"L.M.",contact:"Marketing Manager",kind:"cash",basis:"agreed",value:12000,rel:75,last:"2026-09-12",closed:"2026-09-12",renewal:"2027-09-01"},
+ {co:"Kastanje Consulting",type:"Recruitment partner",stage:"Won",owner:"J.H.",contact:"Campus Recruiter",kind:"cash",basis:"agreed",value:18000,rel:75,last:"2026-08-28",closed:"2026-08-28",renewal:"2027-08-01"},
+ {co:"Strandvej Studio",type:"One-off event sponsor",stage:"Lost",owner:"M.S.",contact:"Marketing Manager",kind:"cash",basis:"proposed",value:10000,rel:50,last:"2026-09-25",closed:"2026-09-25",reason:"No budget"},
+ {co:"Tårnby Systems",type:"Recurring event sponsor",stage:"Lost",owner:"J.H.",contact:"Head of Employer Branding",kind:"cash",basis:"proposed",value:20000,rel:50,last:"2026-08-30",closed:"2026-08-30",reason:"Chose another organisation"},
+ {co:"Amager Print",type:"In-kind partner",stage:"Lost",owner:"L.M.",contact:"Sales Manager",kind:"inkind",basis:"estimated",value:3000,rel:25,last:"2026-09-10",closed:"2026-09-10",reason:"No response"},
+ {co:"Nørrebro Robotics",type:"Speaker partner",stage:"Nurture",owner:"A.K.",contact:"Founder",kind:"noncash",units:"1 talk",basis:"none",rel:50,last:"2026-09-08",next:"Revisit: founder back from leave",due:"2027-02-01",revisit:"2027-02-01",nurtureReason:"Founder on leave until January"}
+];
+
+const dkk = n => n.toLocaleString("da-DK") + " DKK";
+const pct = n => Math.round(n) + "%";
+const day = s => new Date(s + "T12:00:00");
+const fmtDate = s => s ? day(s).toLocaleDateString("en-GB", {day:"numeric", month:"short"}) : "—";
+const fmtDateY = s => s ? day(s).toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"}) : "—";
+const daysBetween = (a, b) => Math.round((b - a) / 86400000);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+
+function probability(o) {
+  if (o.stage === "Won") return {p:100, steps:["Won: 100%"]};
+  if (o.stage === "Lost") return {p:0, steps:["Lost: 0%"]};
+  if (o.stage === "Nurture") return {p:null, steps:["Nurture: excluded from the pipeline"]};
+  const base = DEFAULT_P[o.stage];
+  let p = base; const steps = [`${o.stage} default: ${base}%`];
+  const contacted = STAGES.indexOf(o.stage) >= STAGES.indexOf("Contacted");
+  if (o.rel === 100) { p += 10; steps.push("Champion relationship: +10"); }
+  else if (o.rel === 75) { p += 5; steps.push("Warm relationship: +5"); }
+  else if (o.rel === 0 && contacted) { p -= 5; steps.push("No relationship after contact: −5"); }
+  if (o.pastGood) { p += 10; steps.push("Past partnership ended well: +10"); }
+  if (o.askAbove) { p -= 10; steps.push(`Ask above estimated tier (${o.estTier}): −10`); }
+  if (o.objection) { p -= 10; steps.push("Unresolved objection: −10"); }
+  const idx = STAGES.indexOf(o.stage);
+  const nextDefault = DEFAULT_P[STAGES[idx + 1]] ?? 100;
+  const max = Math.min(nextDefault, 90), min = base / 2;
+  if (p > max) { steps.push(`Capped at ${max}% (next stage default)`); p = max; }
+  if (p < min) { steps.push(`Floor at ${min}% (half the stage default)`); p = min; }
+  steps.push(`= ${p}%`);
+  return {p, steps};
+}
+OPPS.forEach(o => { const r = probability(o); o.p = r.p; o.pSteps = r.steps; o.epv = (o.value && o.p != null) ? o.value * o.p / 100 : null; });
+
+function followUp(o) {
+  if (["Won","Lost","Nurture"].includes(o.stage) || !o.due) return null;
+  const d = daysBetween(TODAY, day(o.due));
+  const silent = o.stage === "Contacted" && o.last ? daysBetween(day(o.last), TODAY) : 0;
+  if (d < 0) return {state:"overdue", days:-d, silent};
+  if (silent > 10) return {state:"overdue", days:0, silent};
+  if (d <= 7) return {state:"soon", days:d, silent};
+  return null;
+}
+
+const ownerSel = document.getElementById("f-owner"), typeSel = document.getElementById("f-type");
+const owners = [...new Set(OPPS.map(o => o.owner))].sort();
+const types = [...new Set(OPPS.map(o => o.type))].sort();
+ownerSel.innerHTML = `<option value="">Everyone</option>` + owners.map(o => `<option>${esc(o)}</option>`).join("");
+typeSel.innerHTML = `<option value="">All types</option>` + types.map(t => `<option>${esc(t)}</option>`).join("");
+try { const s = JSON.parse(localStorage.getItem("cbs-pipeline-filters") || "{}"); if (owners.includes(s.owner)) ownerSel.value = s.owner; if (types.includes(s.type)) typeSel.value = s.type; } catch (e) {}
+
+function relDots(v) { const n = v / 25; return `<span class="rel" aria-hidden="true">${[1,2,3,4].map(i => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span>${REL[v]}`; }
+function valueCell(o) {
+  if (o.kind === "noncash") return `<span class="muted">${esc(o.units)}</span>`;
+  if (!o.value) return `<span class="muted">not estimated</span>`;
+  const label = o.kind === "inkind" ? "in-kind est." : o.basis;
+  return `<span class="num">${dkk(o.value)}</span><span class="basis">${label}</span>`;
+}
+
+function render() {
+  const fo = ownerSel.value, ft = typeSel.value;
+  try { localStorage.setItem("cbs-pipeline-filters", JSON.stringify({owner: fo, type: ft})); } catch (e) {}
+  const rows = OPPS.filter(o => (!fo || o.owner === fo) && (!ft || o.type === ft));
+
+  const activeCash = rows.filter(o => ACTIVE.includes(o.stage) && o.kind === "cash" && o.value);
+  const total = activeCash.reduce((s, o) => s + o.value, 0);
+  const weighted = activeCash.reduce((s, o) => s + o.epv, 0);
+  const estShare = total ? activeCash.filter(o => o.basis === "estimated").reduce((s, o) => s + o.value, 0) / total * 100 : 0;
+  const won = rows.filter(o => o.stage === "Won" && o.kind === "cash").reduce((s, o) => s + o.value, 0);
+  const remaining = Math.max(TARGET - won, 0);
+  const coverage = remaining ? weighted / remaining : null;
+  const nWon = rows.filter(o => o.stage === "Won").length, nLost = rows.filter(o => o.stage === "Lost").length;
+  const winRate = (nWon + nLost) ? nWon / (nWon + nLost) * 100 : null;
+  const researchVal = rows.filter(o => RESEARCH.includes(o.stage) && o.kind === "cash" && o.value).reduce((s, o) => s + o.value, 0);
+  const filtered = fo || ft;
+
+  document.getElementById("kpis").innerHTML = `
+    <div class="kpi"><span class="label">Total pipeline (cash)</span><span class="value">${dkk(total)}</span>
+      <span class="note">${activeCash.length} active opportunities · ${pct(estShare)} of value is estimated</span></div>
+    <div class="kpi"><span class="label">Weighted pipeline</span><span class="value">${dkk(Math.round(weighted))}</span>
+      <span class="note">Σ value × probability</span></div>
+    <div class="kpi"><span class="label">Won this semester</span><span class="value">${dkk(won)}</span>
+      <div class="meter" role="img" aria-label="${pct(won / TARGET * 100)} of target"><span style="width:${Math.min(won / TARGET * 100, 100)}%"></span></div>
+      <span class="note">${pct(won / TARGET * 100)} of ${dkk(TARGET)} target${filtered ? " (whole team target)" : ""}</span></div>
+    <div class="kpi"><span class="label">Target coverage</span><span class="value">${coverage == null ? "—" : coverage.toFixed(2)}<small> ×</small></span>
+      ${coverage == null ? `<span class="note">Target reached</span>` : coverage < 1
+        ? `<span class="flag crit"><span class="dot"></span>Below 1.0: pipeline can't reach target</span>`
+        : `<span class="flag ok"><span class="dot"></span>Enough weighted pipeline</span>`}
+      <span class="note">weighted pipeline ÷ remaining target</span></div>
+    <div class="kpi"><span class="label">Win rate</span><span class="value">${winRate == null ? "—" : pct(winRate)}</span>
+      <span class="note">${nWon} won · ${nLost} lost · research funnel ${dkk(researchVal)} (not in pipeline)</span></div>`;
+
+  // follow-ups
+  const fus = rows.map(o => ({o, f: followUp(o)})).filter(x => x.f).sort((a, b) => day(a.o.due) - day(b.o.due));
+  document.getElementById("fu-count").textContent = `${fus.filter(x => x.f.state === "overdue").length} overdue · ${fus.filter(x => x.f.state === "soon").length} due within 7 days`;
+  document.getElementById("fu").innerHTML = fus.length ? fus.map(({o, f}) => `
+    <div class="fu">
+      <span class="when">${f.state === "overdue"
+        ? `<span class="pill overdue"><span class="ic">!</span>${f.days ? `Overdue ${f.days}d` : "No reply"}</span>`
+        : `<span class="pill soon"><span class="ic">◷</span>${f.days === 0 ? "Today" : f.days === 1 ? "Tomorrow" : `In ${f.days}d`}</span>`}</span>
+      <span><span class="co">${esc(o.co)}</span> <span class="muted">· ${esc(o.stage)}</span><br><span class="act">${esc(o.next)}${f.silent > 10 ? ` · no reply for ${f.silent} days` : ""}</span></span>
+      <span class="meta">${esc(o.owner)}<br>due ${fmtDate(o.due)}</span>
+    </div>`).join("") : `<div class="empty">Nothing due in the next 7 days.</div>`;
+
+  // stage chart
+  const counts = Object.fromEntries(STAGES.map(s => [s, rows.filter(o => o.stage === s)]));
+  const maxN = Math.max(1, ...STAGES.map(s => counts[s].length));
+  document.getElementById("stages").innerHTML = GROUPS.map(([g, list]) => `
+    <div class="stage-group"><span class="label">${g}</span>
+      ${list.map(s => { const n = counts[s].length; const cash = counts[s].filter(o => o.kind === "cash" && o.value).reduce((a, o) => a + o.value, 0);
+        const tip = `${s}: ${n} ${n === 1 ? "opportunity" : "opportunities"}${n ? " — " + counts[s].map(o => o.co).join(", ") : ""}. Cash value ${dkk(cash)}.`;
+        return `<div class="stage-row">
+          <span class="name">${s}</span>
+          <span class="bar-track tip-target" tabindex="0" data-tip="${esc(tip)}" style="border:0">
+            <span class="bar ${n ? "" : "zero"}" style="display:block;width:${n / maxN * 85}%"></span>
+            <span class="bar-label" style="left:${n / maxN * 85}%">${n}</span>
+          </span>
+          <span class="val">${cash ? cash.toLocaleString("da-DK") : "—"}</span></div>`; }).join("")}
+    </div>`).join("");
+
+  // priority prospects
+  const open = rows.filter(o => !["Won","Lost","Nurture"].includes(o.stage)).sort((a, b) => b.A - a.A).slice(0, 8);
+  document.getElementById("prio").innerHTML = `<thead><tr>
+      <th>Company</th><th class="r">Priority</th><th>Stage</th><th>Partnership type</th><th>Relationship</th>
+      <th>Potential value</th><th class="r">Probability</th><th class="r">Expected value</th><th>Next action</th></tr></thead>
+    <tbody>${open.length ? open.map(o => `<tr>
+      <td><strong>${esc(o.co)}</strong><span class="sub">${esc(o.owner)} → ${esc(o.contact || "contact not identified")}</span></td>
+      <td class="r"><span class="num">${o.A}</span><br><span class="q ${o.quad}">${o.quad}</span>${o.badge ? `<span class="sub">${esc(o.badge)}</span>` : ""}</td>
+      <td>${esc(o.stage)}<span class="sub">last contact ${fmtDate(o.last)}</span></td>
+      <td>${esc(o.type)}</td>
+      <td style="white-space:nowrap">${relDots(o.rel)}</td>
+      <td>${valueCell(o)}</td>
+      <td class="r"><span class="num tip-target" tabindex="0" data-tip="${esc(o.pSteps.join(" · "))}">${pct(o.p)}</span></td>
+      <td class="r num">${o.epv != null ? dkk(Math.round(o.epv)) : "—"}</td>
+      <td>${esc(o.next)}<span class="sub">due ${fmtDate(o.due)}</span></td></tr>`).join("")
+      : `<tr><td colspan="9" class="empty">No open opportunities match these filters.</td></tr>`}</tbody>`;
+
+  // won
+  const wonRows = rows.filter(o => o.stage === "Won");
+  document.getElementById("won-sum").textContent = wonRows.length ? `${dkk(won)} cash` : "";
+  document.getElementById("won").innerHTML = `<thead><tr><th>Company</th><th>Type</th><th class="r">Agreed</th><th>Won</th><th>Renewal</th></tr></thead>
+    <tbody>${wonRows.length ? wonRows.map(o => `<tr><td><strong>${esc(o.co)}</strong><span class="sub">${esc(o.owner)}</span></td><td>${esc(o.type)}</td>
+      <td class="r num">${dkk(o.value)}</td><td>${fmtDate(o.closed)}</td><td>${fmtDateY(o.renewal)}</td></tr>`).join("")
+      : `<tr><td colspan="5" class="empty">No won partnerships for these filters.</td></tr>`}</tbody>`;
+
+  // lost
+  const lostRows = rows.filter(o => o.stage === "Lost");
+  const lostCash = lostRows.filter(o => o.kind === "cash").reduce((s, o) => s + o.value, 0);
+  document.getElementById("lost-sum").textContent = lostRows.length ? `${dkk(lostCash)} cash proposed` : "";
+  document.getElementById("lost").innerHTML = `<thead><tr><th>Company</th><th>Type</th><th class="r">Value</th><th>Lost</th><th>Reason</th></tr></thead>
+    <tbody>${lostRows.length ? lostRows.map(o => `<tr><td><strong>${esc(o.co)}</strong><span class="sub">${esc(o.owner)}</span></td><td>${esc(o.type)}</td>
+      <td class="r">${valueCell(o)}</td><td>${fmtDate(o.closed)}</td><td>${esc(o.reason)}</td></tr>`).join("")
+      : `<tr><td colspan="5" class="empty">No lost partnerships for these filters.</td></tr>`}</tbody>`;
+  const reasons = {}; lostRows.forEach(o => reasons[o.reason] = (reasons[o.reason] || 0) + 1);
+  const maxR = Math.max(1, ...Object.values(reasons));
+  document.getElementById("reasons").innerHTML = Object.keys(reasons).length ? Object.entries(reasons).sort((a, b) => b[1] - a[1]).map(([r, n]) => `
+    <div class="reason-row"><span>${esc(r)}</span><span class="bar-track tip-target" tabindex="0" data-tip="${esc(r)}: ${n} lost">
+      <span class="bar" style="display:block;width:${n / maxR * 80}%"></span><span class="bar-label" style="left:${n / maxR * 80}%">${n}</span></span></div>`).join("")
+    : `<div class="empty">None.</div>`;
+
+  // non-cash & in-kind
+  const nc = rows.filter(o => (o.kind === "noncash" || o.kind === "inkind") && !["Lost"].includes(o.stage));
+  document.getElementById("noncash").innerHTML = nc.length ? nc.map(o => `
+    <div class="nc"><span class="what">${esc(o.co)}</span><span>${esc(o.units || o.type)}</span>
+      <span class="muted">${esc(o.type)} · ${esc(o.stage)}${o.p != null ? ` · ${pct(o.p)}` : ""}${o.kind === "inkind" && o.value ? ` · est. ${dkk(o.value)}, expected ${dkk(Math.round(o.epv))}` : ""}${o.stage === "Nurture" ? ` · revisit ${fmtDateY(o.revisit)}: ${esc(o.nurtureReason)}` : ""}</span></div>`).join("")
+    : `<div class="empty">No non-cash or in-kind opportunities for these filters.</div>`;
+}
+
+ownerSel.addEventListener("change", render);
+typeSel.addEventListener("change", render);
+render();
+
+// tooltip: hover and keyboard focus
+const tip = document.getElementById("tip");
+function showTip(el) {
+  tip.textContent = el.dataset.tip; tip.hidden = false;
+  const r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+  let x = Math.min(Math.max(8, r.left + r.width / 2 - tw / 2), window.innerWidth - tw - 8);
+  let y = r.top - th - 8; if (y < 8) y = r.bottom + 8;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+document.addEventListener("mouseover", e => { const el = e.target.closest("[data-tip]"); if (el) showTip(el); });
+document.addEventListener("mouseout", e => { if (e.target.closest("[data-tip]")) tip.hidden = true; });
+document.addEventListener("focusin", e => { const el = e.target.closest("[data-tip]"); if (el) showTip(el); });
+document.addEventListener("focusout", () => { tip.hidden = true; });
+window.addEventListener("scroll", () => { tip.hidden = true; }, {passive: true});
+</script>
