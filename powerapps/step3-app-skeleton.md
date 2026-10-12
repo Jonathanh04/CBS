@@ -27,52 +27,31 @@ Swedish Power Apps names are given in *italics* where they differ.
    are. For "My lists", choose the site that appears under your name, or paste its address.
    Tick **all 11 lists** → **Connect** (*Anslut*).
 
-## 2. Load the data: App.OnStart (5 min)
+## 2. Load the data and calculate the scores: App.OnStart (10 min)
 
 1. In the **Tree view** (*Trädvy*), click **App**.
-2. In the property dropdown at the top left (where it said *Fill* before), choose **OnStart**.
-3. Delete what's in the formula bar and paste the contents of
-   [`formulas/App.OnStart.fx`](formulas/App.OnStart.fx):
-
-```
-Concurrent(
-    ClearCollect(colCompanies; Companies);
-    ClearCollect(colCE; CommercialEvidence);
-    ClearCollect(colContacts; Contacts);
-    ClearCollect(colOpps; Opportunities);
-    ClearCollect(colInteractions; Interactions);
-    ClearCollect(colEvidence; Evidence);
-    ClearCollect(colTeam; TeamMembers);
-    ClearCollect(colPackages; Packages);
-    ClearCollect(colThemes; Themes);
-    ClearCollect(colEvents; Events);
-    ClearCollect(colSettings; Settings)
-)
-```
-
+2. In the property dropdown at the top left, choose **OnStart**.
+3. Delete what's in the formula bar and paste the **whole** contents of
+   [`formulas/App.OnStart.fx`](formulas/App.OnStart.fx). It loads the 11 lists, reads the
+   thresholds from Settings (with safe defaults), and calculates F4, Fit, Access and quadrant
+   per company into the collection **colScored**.
 4. Run it: in the Tree view, click **…** next to **App** → **Run OnStart** (*Kör OnStart*).
 
 ✅ **Check:** left bar → **Variables** (*Variabler*, the `{x}` icon) → **Collections**
-(*Samlingar*). You should see 11 collections (colCompanies, colCE, …). Click **colSettings**:
-it shows 11 rows.
+(*Samlingar*): 12 collections, including **colScored** with one row per company.
 
-## 3. The rules: App.Formulas (10 min)
+> An earlier version put the rules in **App → Formulas** (named formulas). That gave an error
+> in practice, so the calculation now runs in OnStart, where collections always work. If you
+> pasted the old version, clear **App → Formulas** completely.
 
-1. Click **App** again → property dropdown → **Formulas**.
-2. Paste the whole contents of [`formulas/App.Formulas.fx`](formulas/App.Formulas.fx). It's too
-   long to repeat here; copy it from the file on GitHub using the "Copy raw file" button.
-
-✅ **Check:** no red underlines in the formula bar. If there are any, hover over the first red one
-and send me a screenshot of the message.
-
-## 4. Test screen (10 min)
+## 3. Test screen (10 min)
 
 1. **Insert** (*Infoga*) → **Vertical gallery** (*Lodrätt galleri*). If it asks for a data source,
    close that question.
 2. With the gallery selected, set its **Items** property to:
 
 ```
-Sort(Scored; Company)
+Sort(colScored; Company)
 ```
 
 3. Click the **first row's title label** inside the gallery, and set its **Text** property to:
@@ -83,15 +62,15 @@ ThisItem.Company & "  ·  Fit " & ThisItem.Fit & "  ·  Access " & ThisItem.Acce
 
 4. Delete the gallery's other labels (subtitle, body) if they show errors.
 
-## 5. Test data (15 min)
+## 4. Test data (15 min)
 
 1. Open [`step3-test-data.xlsx`](step3-test-data.xlsx) (fictional rows marked "(test)").
 2. For each tab (**Companies, CommercialEvidence, Contacts, Interactions**): open the SharePoint
    list with the same name → **Edit in grid view** (*Redigera i rutnätsvy*) → in Excel, copy the
    data rows (not the header) → click the first empty row in the grid → paste → **Exit grid view**.
-3. Back in Power Apps: **App → … → Run OnStart** again to reload the data.
+3. Back in Power Apps: **App → … → Run OnStart** again to reload the data and recalculate.
 
-## 6. ✅ Checkpoint
+## 5. ✅ Checkpoint
 
 The gallery must show exactly this:
 
