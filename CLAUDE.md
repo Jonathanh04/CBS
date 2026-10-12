@@ -79,5 +79,6 @@ no `FILTER`, `SORT`, `UNIQUE`, `XLOOKUP` or other spilling functions.
   `docs/powerapps-data-model.md`, the setup generator and the app formulas together.
 - Power Apps formulas in `powerapps/` use Swedish-locale separators (`;` between arguments,
   `;;` between actions) because that is how the maintainer's Power Apps is set up.
-- The GitHub repository is private (CBS Talks team only).
+- The GitHub repository should be private, with access for the CBS Talks team only (it was still
+  public on 2026-10-12; the owner changes this in GitHub settings).
 - Don't reintroduce ideas from `docs/archive/` without the user asking.

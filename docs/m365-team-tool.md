@@ -16,7 +16,7 @@ unchanged and still come from [`lean-spec.md`](lean-spec.md).
 | Shared CBS Talks Team/SharePoint | Unknown yet | Needed before the lists are created (step 1) |
 | Upload own Excel add-in | "My add-ins" shows only installed and admin-managed add-ins; no "Upload My Add-in" link | Excel add-in route dropped (most likely blocked by CBS) |
 | Power Apps with CBS account | Works: a blank canvas app opens in the CBS environment (Swedish UI) | **Chosen route** |
-| GitHub visibility | Private, with access for the CBS Talks team only | Repository stays private; teammates are added as collaborators |
+| GitHub visibility | Wanted: private, CBS Talks team only (still public on 2026-10-12) | Owner switches to private and adds teammates as collaborators |
 
 ## Architecture
 
