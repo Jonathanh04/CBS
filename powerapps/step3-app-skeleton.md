@@ -62,13 +62,23 @@ ThisItem.Company & "  ·  Fit " & ThisItem.Fit & "  ·  Access " & ThisItem.Acce
 
 4. Delete the gallery's other labels (subtitle, body) if they show errors.
 
-## 4. Test data (15 min)
+## 4. Test data (5 min)
 
-1. Open [`step3-test-data.xlsx`](step3-test-data.xlsx) (fictional rows marked "(test)").
-2. For each tab (**Companies, CommercialEvidence, Contacts, Interactions**): open the SharePoint
-   list with the same name → **Edit in grid view** (*Redigera i rutnätsvy*) → in Excel, copy the
-   data rows (not the header) → click the first empty row in the grid → paste → **Exit grid view**.
-3. Back in Power Apps: **App → … → Run OnStart** again to reload the data and recalculate.
+**Easiest: a temporary button that adds the test rows for you.**
+
+1. **Insert** (*Infoga*) → **Button** (*Knapp*). Place it anywhere.
+2. With the button selected, choose **OnSelect** in the property dropdown and paste the whole
+   contents of [`formulas/TestData.Add.fx`](formulas/TestData.Add.fx).
+3. Hold **Alt** (Option on Mac) and click the button once, or press ▷ (Preview) and click it.
+   A green message says "Test data added".
+4. **App → … → Run OnStart** to reload and recalculate.
+
+After the checkpoint, change the button's **OnSelect** to the contents of
+[`formulas/TestData.Remove.fx`](formulas/TestData.Remove.fx), click it once to remove all
+"(test)" rows, run OnStart again, and delete the button.
+
+*Alternative:* paste the rows from [`step3-test-data.xlsx`](step3-test-data.xlsx) into each list
+via **Edit in grid view**. This is more fiddly, because the grid's column order must match.
 
 ## 5. ✅ Checkpoint
 
