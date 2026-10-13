@@ -284,6 +284,8 @@ body.ro .w { display: none !important; }
 .kv dt { color: var(--muted); font-weight: 600; }
 .kv dd { margin: 0; }
 .chat { display: grid; gap: 12px; }
+.approve { padding: 14px 16px; display: grid; gap: 8px; border-left: 4px solid var(--gold); max-width: min(80ch, 100%); }
+.webbar { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 .msg { max-width: min(80ch, 100%); padding: 12px 14px; border-radius: 12px; overflow-wrap: anywhere; line-height: 1.5; }
 .msg.user, .msg .mt { white-space: pre-wrap; }
 .msg.user { justify-self: end; background: var(--brand); color: #fff; border-bottom-right-radius: 4px; }
@@ -1256,9 +1258,11 @@ async function deleteCompany(c) {
 }
 
 /* ---------- Assistant (Claude inside the desk) ---------- */
-let SAMPLE = null, SAMPLE_TOOLS_MAX = 0;
+let SAMPLE = null, SAMPLE_TOOLS_MAX = 0, MCP = null, PERMS = null;
+const WEB_SERVER = "Parallel Search";
+const WEB = { state: "off", tools: [] }; // off | missing | allow | ready | denied | unsupported
 const CHAT = { msgs: [], draft: "", busy: false, ctl: null, off: "", noTools: false };
-const PROMPTS = ["What should I work on this week?", "Summarise the open deals and what is late", "Which companies are missing evidence or ratings?", "Help me prepare for a first meeting with…"];
+const PROMPTS = ["Find Danish companies that could sponsor a talk on AI and work", "What should I work on this week?", "Summarise the open deals and what is late", "Which companies are missing evidence or ratings?", "Help me prepare for a first meeting with…"];
 
 const ASSISTANT_RULES = `You are the assistant inside the CBS Talks Partnership Desk, the partnership system of CBS Talks, a student organisation at Copenhagen Business School that runs talks with business leaders. You help the Partnerships Manager decide which companies to work on, keep the records up to date and prepare outreach.
 
@@ -1270,14 +1274,14 @@ How the desk works:
 - No cash ask in a first contact unless Access is 3 or more.
 
 Rules you must follow:
-- Never invent facts about companies or people. You cannot browse the web. If something is not in the data or in what the user told you, say it is unknown and suggest what to check.
+- Never invent facts about companies or people. If something is not in the data, in what the user told you or in a source you found, say it is unknown and suggest what to check.
 - No budget estimates: never guess what a company could or would pay. Only amounts CBS Talks actually received or agreed are recorded.
 - Guesses become questions: never present a company's likely goals or objections as fact; turn them into questions to ask them.
 - Contacts: work data only (a published work email or LinkedIn profile), no guessed emails, no personal opinions about people.
 - Change data only when the user asks you to, using the tools, and only with information the user gave you or that is already in the desk. Never rate Fit from your own judgement: you may suggest a rating in your reply, but write it only when the user states or confirms it. A rating of 2 needs a source.
 - Evidence you add is stored as an AI draft that a person must verify.
 - If a request is ambiguous (which company, which deal), ask before changing anything.
-- After changing data, say briefly what you changed.
+- Every change is shown to the user for a Yes/No approval before it is saved. If they say no, don't make it again unless they ask. After changing data, say briefly what you changed.
 
 Style: answer in the user's language (English unless they write another language), short and practical. Plain text with short paragraphs and "- " bullet lists; no tables, no headings, no bold markers. Use company and contact names exactly as in the data.`;
 
@@ -1366,17 +1370,17 @@ const AGENT_TOOLS = [
   { name: "add_company", write: true,
     description: "Add a new company. Only use information the user gave. Fit starts unrated. Returns a confirmation.",
     inputSchema: { type: "object", properties: { name: S_STR("Company name"), industry: S_STR("One of: " + INDUSTRIES.join("; ")), size: S_STR("Employees in Denmark: <50, 50-249, 250-999, 1000+ or Unknown"), website: S_STR("Website"), owner: S_STR("Team member who owns it"), intro_path: S_STR("Who can introduce us, if known"), specific_need: S_STR("A specific current CBS Talks need this company could meet, if any") }, required: ["name"] },
-    execute: async i => {
+    execute: async (i, call) => {
       canEditData(); const name = str(i.name); if (!name) throw new Error("Name missing.");
       if (S.companies.some(c => c.name.toLowerCase() === name.toLowerCase())) throw new Error(`${name} is already in the desk.`);
       const body = { name, industry: oneOf(i.industry, INDUSTRIES, "industry") || "Other", size: oneOf(i.size, SIZES, "size") || "Unknown", website: str(i.website), owner: str(i.owner) || defaultOwner(),
         intro: str(i.intro_path), need: str(i.specific_need), path: null, dnc: false, fit: { f1: [null, "", ""], f2: [null, "", ""], f3: [null, "", ""], f5: [null, "", ""] }, commercial: [], contacts: [], evidence: [], created: todayIso() };
-      await put("companies", "c-" + rid(), body); note(`Added company ${name}`); return `Added ${name}.`;
+      await call.approve(); await put("companies", "c-" + rid(), body); note(`Added company ${name}`); return `Added ${name}.`;
     } },
   { name: "update_company", write: true,
     description: "Change a company's basic details: owner, website, industry, size, introduction path (filling it gives Access 2) or specific need. Only the fields you pass change.",
     inputSchema: { type: "object", properties: { company: S_STR("Company name"), owner: S_STR("Team member"), website: S_STR("Website"), industry: S_STR("Industry from the list"), size: S_STR("<50, 50-249, 250-999, 1000+ or Unknown"), intro_path: S_STR("Who can introduce us"), specific_need: S_STR("Specific current need") }, required: ["company"] },
-    execute: async i => {
+    execute: async (i, call) => {
       canEditData(); const c = findCompany(i.company); const upd = {};
       if (i.owner != null) upd.owner = str(i.owner);
       if (i.website != null) upd.website = str(i.website);
@@ -1385,12 +1389,12 @@ const AGENT_TOOLS = [
       if (i.intro_path != null) upd.intro = str(i.intro_path);
       if (i.specific_need != null) upd.need = str(i.specific_need);
       if (!Object.keys(upd).length) throw new Error("Nothing to change.");
-      await patch("companies", c.id, upd); note(`Updated ${c.name}: ${Object.keys(upd).join(", ")}`); return "Saved.";
+      await call.approve(); await patch("companies", c.id, upd); note(`Updated ${c.name}: ${Object.keys(upd).join(", ")}`); return "Saved.";
     } },
   { name: "rate_fit", write: true,
     description: "Set one Fit rating (F1, F2, F3 or F5; F4 is derived) for a company. Only when the user stated or confirmed the rating. Needs a one-line reason; a 2 also needs a source.",
     inputSchema: { type: "object", properties: { company: S_STR("Company name"), criterion: S_STR("F1, F2, F3 or F5"), rating: { type: "integer", minimum: 0, maximum: 2 }, reason: S_STR("One line, at most 140 characters"), source: S_STR("Where this comes from; required for a 2") }, required: ["company", "criterion", "rating", "reason"] },
-    execute: async i => {
+    execute: async (i, call) => {
       canEditData(); const c = findCompany(i.company);
       const k = { F1: "f1", F2: "f2", F3: "f3", F5: "f5" }[str(i.criterion).toUpperCase()]; if (!k) throw new Error("criterion must be F1, F2, F3 or F5 (F4 is derived).");
       const r = Number(i.rating); if (![0, 1, 2].includes(r)) throw new Error("rating must be 0, 1 or 2.");
@@ -1398,14 +1402,14 @@ const AGENT_TOOLS = [
       if (r === 2 && !src) throw new Error("A 2 needs a source. Ask the user for it.");
       const before = c.fit[k][0], qb = quadrant(c);
       const qa = quadrant(normCompany(c.id, { ...clone(c), fit: { ...clone(c.fit), [k]: [r, why, src] } }));
-      await patch("companies", c.id, { fit: { [k]: [r, why, src] }, fitReviewed: todayIso() });
+      await call.approve(); await patch("companies", c.id, { fit: { [k]: [r, why, src] }, fitReviewed: todayIso() });
       note(`${c.name}: ${CRIT[k][0]} ${before ?? "unrated"} → ${r}${qa !== qb ? ` (now ${qa})` : ""}`);
       return `Saved. Quadrant: ${qa}.`;
     } },
   { name: "add_contact", write: true,
     description: "Add a contact person at a company. Work data only: a published work email or LinkedIn URL, never a guessed email. Needs where the contact was found.",
     inputSchema: { type: "object", properties: { company: S_STR("Company name"), name: S_STR("Contact's name"), title: S_STR("Job title"), role: S_STR("Role category, one of: " + ROLES.join("; ")), relationship: S_STR("Named or Champion (actively helps us)"), source: S_STR("Where the user found them"), work_email: S_STR("Published work email, only if the user gave it"), linkedin: S_STR("LinkedIn URL, only if the user gave it"), cbs_alumnus: S_STR("Yes, No or Unknown") }, required: ["company", "name", "source"] },
-    execute: async i => {
+    execute: async (i, call) => {
       canEditData(); const c = findCompany(i.company); const name = str(i.name), source = str(i.source);
       if (!name || !source) throw new Error("Name and source are required.");
       if (c.contacts.some(p => p.name.toLowerCase() === name.toLowerCase())) throw new Error(`${c.name} already has a contact called ${name}.`);
@@ -1414,45 +1418,45 @@ const AGENT_TOOLS = [
       if (li && !/^https:\/\//.test(li)) throw new Error("The LinkedIn URL must start with https://");
       const item = { k: rid(), name, title: str(i.title), role: oneOf(i.role, ROLES, "role") || "Other", rel: oneOf(i.relationship, ["Named", "Champion"], "relationship") || "Named",
         alumni: oneOf(i.cbs_alumnus, ["Yes", "No", "Unknown"], "cbs_alumnus") || "Unknown", email, linkedin: li, source, verified: todayIso(), left: false, dnc: false };
-      await patch("companies", c.id, { contacts: [...clone(c.contacts), item] }); note(`Added contact ${name} at ${c.name}`); return "Saved.";
+      await call.approve(); await patch("companies", c.id, { contacts: [...clone(c.contacts), item] }); note(`Added contact ${name} at ${c.name}`); return "Saved.";
     } },
   { name: "add_evidence", write: true,
     description: "Record a claim about a company. It is stored as an unchecked AI draft until a person verifies the source. Label it Verified fact or Source-backed inference only with a source (an inference also needs reasoning); otherwise Unknown.",
     inputSchema: { type: "object", properties: { company: S_STR("Company name"), about: S_STR("F1, F2, F3, F5, Access or General"), statement: S_STR("The claim, or for Unknown the open question"), label: S_STR("Verified fact, Source-backed inference or Unknown"), source: S_STR("Source"), reasoning: S_STR("Why the source supports an inference") }, required: ["company", "statement", "label"] },
-    execute: async i => {
+    execute: async (i, call) => {
       canEditData(); const c = findCompany(i.company); const label = oneOf(i.label, LABELS, "label") || "Unknown";
       const src = str(i.source), reasoning = str(i.reasoning), text = str(i.statement); if (!text) throw new Error("Statement missing.");
       if (label !== "Unknown" && !src) throw new Error("A source is required unless the label is Unknown.");
       if (label === "Source-backed inference" && !reasoning) throw new Error("An inference needs reasoning.");
       const item = { k: rid(), crit: oneOf(i.about, ["F1", "F2", "F3", "F5", "Access", "General"], "about") || "General", text, label, src, reasoning, ai: true, checked: false, by: me(), on: todayIso() };
-      await patch("companies", c.id, { evidence: [...clone(c.evidence), item] }); note(`Added evidence to ${c.name} (unchecked AI draft)`); return "Saved as an unchecked AI draft.";
+      await call.approve(); await patch("companies", c.id, { evidence: [...clone(c.evidence), item] }); note(`Added evidence to ${c.name} (unchecked AI draft)`); return "Saved as an unchecked AI draft.";
     } },
   { name: "add_commercial_evidence", write: true,
     description: "Record observed commercial evidence (this sets F4). Never an estimate. An amount only for Previous CBS Talks spend, from CBS Talks' own records.",
     inputSchema: { type: "object", properties: { company: S_STR("Company name"), type: S_STR("One of: " + CE_TYPES.join("; ")), description: S_STR("What was observed or checked"), source: S_STR("Source; required except for Previous CBS Talks items"), amount_dkk: { type: "number" }, year: S_STR("Year, e.g. 2025") }, required: ["company", "type", "description"] },
-    execute: async i => {
+    execute: async (i, call) => {
       canEditData(); const c = findCompany(i.company); const type = oneOf(i.type, CE_TYPES, "type"); if (!type) throw new Error("type missing.");
       const src = str(i.source), desc = str(i.description); if (!desc) throw new Error("Description missing.");
       if (!type.startsWith("Previous CBS Talks") && !src) throw new Error("A source is required for this type.");
       const amount = i.amount_dkk == null || i.amount_dkk === "" ? null : Number(i.amount_dkk);
       if (amount != null && type !== "Previous CBS Talks spend") throw new Error("Amounts are only recorded for Previous CBS Talks spend. No estimates.");
-      await patch("companies", c.id, { commercial: [...clone(c.commercial), { k: rid(), type, desc, src, amount, year: str(i.year) || String(TODAY.getFullYear()), on: todayIso(), by: me() }] });
+      await call.approve(); await patch("companies", c.id, { commercial: [...clone(c.commercial), { k: rid(), type, desc, src, amount, year: str(i.year) || String(TODAY.getFullYear()), on: todayIso(), by: me() }] });
       note(`Added commercial evidence to ${c.name}: ${type}`); return "Saved.";
     } },
   { name: "create_deal", write: true,
     description: "Create a planned deal (proposed partnership) for a company. Needs a next action and a due date.",
     inputSchema: { type: "object", properties: { company: S_STR("Company name"), type: S_STR("One of: " + OPP_TYPES.join(", ")), kind: S_STR("Cash, In-kind or Non-cash"), next_action: S_STR("Next action"), due: S_STR("Due date yyyy-mm-dd"), contact: S_STR("Contact name at the company"), owner: S_STR("Team member"), renewal: { type: "boolean" } }, required: ["company", "type", "next_action", "due"] },
-    execute: async i => {
+    execute: async (i, call) => {
       canEditData(); const c = findCompany(i.company); if (c.dnc) throw new Error(`${c.name} is flagged do not contact.`);
       const next = str(i.next_action), due = isoDate(i.due, "due"); if (!next || !due) throw new Error("A next action and a due date are required.");
       const body = { co: c.id, type: oneOf(i.type, OPP_TYPES, "type") || "Speaker", stage: "Planned", owner: str(i.owner) || c.owner || defaultOwner(), contact: str(i.contact) || (c.contacts[0] || {}).name || "",
         renewal: !!i.renewal, kind: oneOf(i.kind, KINDS, "kind") || "Non-cash", noncash: "", why: "", next, due, created: todayIso() };
-      await put("opps", "o-" + rid(), body); note(`Created ${body.type} deal with ${c.name}`); return "Saved.";
+      await call.approve(); await put("opps", "o-" + rid(), body); note(`Created ${body.type} deal with ${c.name}`); return "Saved.";
     } },
   { name: "update_deal", write: true,
     description: "Update a company's deal: next action and due date, satisfaction, or move it to another stage. Moving to Proposal sent (cash) needs a package or proposed amount; Won needs the agreed amount (cash) and a renewal date; Lost needs a lost reason; Nurture needs a reason and a revisit date.",
     inputSchema: { type: "object", properties: { company: S_STR("Company name"), deal_type: S_STR("Partnership type, if the company has several deals"), stage: S_STR("One of: " + STAGES.join(", ")), next_action: S_STR("Next action"), due: S_STR("yyyy-mm-dd"), package: S_STR("Package name"), proposed_dkk: { type: "number" }, agreed_dkk: { type: "number" }, renewal_date: S_STR("yyyy-mm-dd"), lost_reason: S_STR("One of: " + LOST_REASONS.join(", ")), nurture_reason: S_STR("Why it is parked"), revisit_on: S_STR("yyyy-mm-dd"), satisfaction: S_STR("Satisfied, Neutral, Unsatisfied or Unknown") }, required: ["company"] },
-    execute: async i => {
+    execute: async (i, call) => {
       canEditData(); const c = findCompany(i.company); const o = findDeal(c, str(i.deal_type), false);
       const extra = {};
       if (i.next_action != null) extra.next = str(i.next_action);
@@ -1471,16 +1475,16 @@ const AGENT_TOOLS = [
         const names = { pkg: "package or proposed_dkk", agreed: "agreed_dkk", renewalDate: "renewal_date", lost: "lost_reason", nurture: "nurture_reason", nurtureUntil: "revisit_on" };
         if (need.length) throw new Error(`Moving to ${stage} needs: ${need.map(k => names[k]).join(", ")}. Ask the user.`);
         if (OPEN.includes(stage) && !((extra.next ?? o.next) && (extra.due ?? o.due))) throw new Error("An open deal needs a next action and a due date.");
-        await applyStage(o, stage, extra); note(`${c.name}: ${o.type} deal moved ${o.stage} → ${stage}`); return `Moved to ${stage}.`;
+        await call.approve(); await applyStage(o, stage, extra); note(`${c.name}: ${o.type} deal moved ${o.stage} → ${stage}`); return `Moved to ${stage}.`;
       }
       if (!Object.keys(extra).length) throw new Error("Nothing to change.");
       if (isOpen(o) && (("next" in extra && !extra.next) || ("due" in extra && !extra.due))) throw new Error("An open deal needs a next action and a due date.");
-      await patch("opps", o.id, extra); note(`${c.name}: updated ${o.type} deal (${Object.keys(extra).join(", ")})`); return "Saved.";
+      await call.approve(); await patch("opps", o.id, extra); note(`${c.name}: updated ${o.type} deal (${Object.keys(extra).join(", ")})`); return "Saved.";
     } },
   { name: "log_contact", write: true,
     description: "Log a contact with a company (email, call, meeting...). If the company has a deal in progress, also pass the deal's new next action and due date.",
     inputSchema: { type: "object", properties: { company: S_STR("Company name"), summary: S_STR("One line: what happened"), contact: S_STR("Contact name"), channel: S_STR(CHANNELS.join(", ")), direction: S_STR(DIRS.join(", ")), outcome: S_STR(OUTCOMES.join(", ")), date: S_STR("yyyy-mm-dd, default today"), deal_type: S_STR("Partnership type, if several deals are in progress"), next_action: S_STR("The deal's next action"), due: S_STR("yyyy-mm-dd") }, required: ["company", "summary"] },
-    execute: async i => {
+    execute: async (i, call) => {
       canEditData(); const c = findCompany(i.company); const summary = str(i.summary); if (!summary) throw new Error("Summary missing.");
       const open = oppsOf(c.id).filter(isOpen); let o = null;
       if (open.length) {
@@ -1488,12 +1492,30 @@ const AGENT_TOOLS = [
         if (!str(i.next_action) || !str(i.due)) throw new Error(`${c.name} has a deal in progress (${o.type}, next: ${o.next || "none"}). Ask the user for the new next action and due date.`);
       }
       const dir = oneOf(i.direction, DIRS, "direction") || "Sent by us";
-      await put("interactions", "i-" + rid(), { date: isoDate(i.date, "date") || todayIso(), co: c.id, opp: o ? o.id : "", contact: str(i.contact) || (o && o.contact) || "", by: me(),
+      await call.approve(); await put("interactions", "i-" + rid(), { date: isoDate(i.date, "date") || todayIso(), co: c.id, opp: o ? o.id : "", contact: str(i.contact) || (o && o.contact) || "", by: me(),
         channel: oneOf(i.channel, CHANNELS, "channel") || "Email", dir, summary, outcome: oneOf(i.outcome, OUTCOMES, "outcome") || "Neutral" });
-      if (o) { const upd = { next: str(i.next_action), due: isoDate(i.due, "due") }; if (o.stage === "Planned" && dir === "Sent by us") upd.stage = "Contacted"; await patch("opps", o.id, upd); }
+      if (o) { const upd = { next: str(i.next_action), due: isoDate(i.due, "due") }; if (o.stage === "Planned" && dir === "Sent by us") upd.stage = "Contacted"; await call.approve(); await patch("opps", o.id, upd); }
       note(`Logged contact with ${c.name}${o ? `; next: ${str(i.next_action)} (${fmt(str(i.due))})` : ""}`); return "Logged.";
     } },
 ];
+
+/* every change the assistant wants to make waits for the user's Yes or No */
+const APPROVALS = [];
+const CHANGE_TITLES = { add_company: "Add a company", update_company: "Change a company", rate_fit: "Set a Fit rating", add_contact: "Add a contact",
+  add_evidence: "Add evidence (stored as an unchecked AI draft)", add_commercial_evidence: "Add commercial evidence", create_deal: "Create a deal", update_deal: "Update a deal", log_contact: "Log a contact" };
+function askApproval(tool, input, signal) {
+  return new Promise((resolve, reject) => {
+    const item = { id: rid(), title: CHANGE_TITLES[tool] || tool,
+      lines: Object.entries(input || {}).filter(([, v]) => v !== "" && v != null).map(([k, v]) => [k.replace(/_/g, " "), typeof v === "object" ? JSON.stringify(v) : String(v)]) };
+    const done = () => { const i = APPROVALS.indexOf(item); if (i >= 0) APPROVALS.splice(i, 1); schedule(); };
+    item.yes = () => { done(); resolve(); };
+    item.no = () => { done(); reject(new Error("The user said no to this change. Don't make it unless they ask again.")); };
+    signal.addEventListener("abort", () => { if (APPROVALS.includes(item)) { done(); reject(new Error("The user didn't answer in time, so nothing was changed.")); } });
+    APPROVALS.push(item);
+    const m = CHAT.msgs[CHAT.msgs.length - 1]; if (m && m.role === "ai") m.status = "Waiting for your approval…";
+    schedule();
+  });
+}
 
 function chatErr(e) {
   const c = e && e.code;
@@ -1509,6 +1531,60 @@ function chatErr(e) {
   if (c === "cancelled") return "Stopped.";
   return "Something went wrong. Try again.";
 }
+const WEB_RULES_ON = `
+Web search is ON. You can search the web (web_search) and read pages (web_fetch) to find companies or people that could be relevant for CBS Talks, or to check facts about a company.
+- For every fact you report, give the source URL. Say "Verified fact" when the source states it directly, "Source-backed inference" when you conclude it (say why), and "Unknown" for what you could not find.
+- When suggesting companies, explain the fit in terms of the five Fit criteria (student pull, content fit, reason to work with CBS Talks, track record of paying for student engagement, long-term potential) and propose ratings as suggestions only. Prefer companies with a presence in Denmark.
+- People: only name a person when their current role is published by the company, a news article or a public profile, and give that source. Record work role only. Never look for or guess private details, phone numbers or email addresses.
+- Search queries go to an outside search service: never put contact details or private notes from the desk into a query.
+- Don't add anything you found to the desk unless the user asks. When they do, add companies unrated and record what you found with add_evidence, always with the source URL.`;
+const WEB_RULES_OFF = `
+Web search is OFF: you cannot browse the web. If the user asks you to find companies or people online, tell them to turn on web search at the top of the Assistant tab.`;
+
+async function initWeb() {
+  if (!MCP) { WEB.state = "unsupported"; return; }
+  try {
+    const l = await MCP.listTools(WEB_SERVER);
+    const srv = l && l.servers && l.servers.find(x => x.server === WEB_SERVER);
+    if (!srv || !srv.tools.length || srv.authStatus === "needs_reauth") { WEB.state = "missing"; return; }
+  } catch (e) { WEB.state = "missing"; return; }
+  await loadWebTools(false);
+}
+async function loadWebTools(ask) {
+  if (ask && PERMS) { try { const r = await PERMS.request(["mcp:" + WEB_SERVER]); if (r["mcp:" + WEB_SERVER] === "denied") { WEB.state = "denied"; schedule(); return; } } catch (e) {} }
+  const out = [];
+  for (const name of ["web_search", "web_fetch"]) {
+    try {
+      const d = await MCP.describeTool(WEB_SERVER, name);
+      const schema = d && d.inputSchema && d.inputSchema.type === "object" && JSON.stringify(d.inputSchema).length < 3800 ? d.inputSchema : null;
+      if (!schema) continue;
+      out.push({ name, write: false, web: true, inputSchema: schema,
+        description: (name === "web_search" ? "Search the web. " : "Read the text of one web page. ") + String(d.description || "").slice(0, 700),
+        execute: async (input, signal) => {
+          const r = await MCP.callTool(WEB_SERVER, name, input, { signal });
+          let txt = typeof r.payload === "string" ? r.payload : JSON.stringify(r.payload ?? r.content);
+          if (txt.length > 24000) txt = txt.slice(0, 24000) + " …(cut)";
+          return txt;
+        } });
+    } catch (e) {
+      const c = e && e.code;
+      if (c === "server_not_connected" || c === "needs_reauth" || c === "selection_required") { WEB.state = "missing"; schedule(); return; }
+    }
+  }
+  WEB.tools = out; WEB.state = out.length ? "ready" : (ask ? "unsupported" : "allow"); schedule();
+}
+function webBar() {
+  const m = {
+    ready: `<span class="pill good">Web search on</span><span class="muted small">Searches go to ${WEB_SERVER}, an outside service. Don't paste contact details into questions you want searched.</span>`,
+    allow: `<span class="pill info">Web search off</span><button class="btn small" data-chat="web">Turn on web search</button>`,
+    denied: `<span class="pill info">Web search off</span><span class="muted small">You declined ${WEB_SERVER} for this page. Turn it on again from this page's Permissions menu, then reload.</span>`,
+    missing: `<span class="pill info">Web search off</span><span class="muted small">To search the web, add the free <b>${WEB_SERVER}</b> connector in claude.ai (Settings → Connectors), then reload this page.</span>`,
+    unsupported: `<span class="pill info">Web search unavailable</span><span class="muted small">Web search can't run in this view.</span>`,
+    off: "",
+  }[WEB.state] || "";
+  return m ? `<div class="rowbtns webbar">${m}</div>` : "";
+}
+
 async function chatSend(textIn) {
   const text = str(textIn ?? CHAT.draft);
   if (!text || CHAT.busy || !SAMPLE) return;
@@ -1516,14 +1592,20 @@ async function chatSend(textIn) {
   CHAT.msgs.push({ role: "user", text });
   const ai = { role: "ai", text: "", acts: [], status: "Thinking…" };
   CHAT.msgs.push(ai);
-  const turns = [{ role: "user", content: ASSISTANT_RULES + "\n\nCURRENT DESK DATA:\n" + deskSnapshot() }];
+  const webOn = WEB.state === "ready" && !CHAT.noTools;
+  const turns = [{ role: "user", content: ASSISTANT_RULES + (webOn ? WEB_RULES_ON : WEB_RULES_OFF) + "\n\nCURRENT DESK DATA:\n" + deskSnapshot() }];
   CHAT.msgs.slice(-21, -1).forEach(m => { if (m.text && !(m.role === "ai" && m.failed)) turns.push({ role: m.role === "user" ? "user" : "assistant", content: m.text }); });
   while (turns.length > 1 && turns[1].role === "assistant") turns.splice(1, 1);
   const ctl = CHAT.ctl = new AbortController();
-  let tools = CHAT.noTools ? [] : AGENT_TOOLS.filter(t => !t.write || canWrite);
+  let tools = CHAT.noTools ? [] : [AGENT_TOOLS[0], ...(webOn ? WEB.tools : []), ...AGENT_TOOLS.slice(1).filter(t => !t.write || canWrite)];
   if (SAMPLE_TOOLS_MAX && tools.length > SAMPLE_TOOLS_MAX) tools = tools.slice(0, SAMPLE_TOOLS_MAX);
   const wrapped = tools.map(t => ({ name: t.name, description: t.description, inputSchema: t.inputSchema,
-    execute: async (input, ctx) => { ai.status = t.write ? "Updating the desk…" : "Reading the desk…"; schedule(); if (ctx.signal.aborted) throw new Error("Stopped"); return await t.execute(input || {}); } }));
+    execute: async (input, ctx) => { ai.status = t.web ? (t.name === "web_search" ? "Searching the web…" : "Reading a web page…") : t.write ? "Updating the desk…" : "Reading the desk…"; schedule();
+      if (ctx.signal.aborted) throw new Error("Stopped");
+      if (t.web) { try { return await t.execute(input || {}, ctx.signal); } catch (e) { throw new Error("Web search failed" + (e && e.code ? " (" + e.code + ")" : "") + ". Try again later."); } }
+      const call = { approved: false, approve: async () => { if (call.approved) return; await askApproval(t.name, input, ctx.signal); call.approved = true;
+        const m = CHAT.msgs[CHAT.msgs.length - 1]; if (m && m.role === "ai") m.status = "Updating the desk…"; schedule(); } };
+      return await t.execute(input || {}, call); } }));
   render(); scrollChat();
   try {
     const opts = { signal: ctl.signal, onText: ({ text }) => { ai.text = text; ai.status = ""; paintMsg(CHAT.msgs.length - 1); } };
@@ -1549,10 +1631,15 @@ function viewAssistant() {
         <div class="msg-status" id="msg-status-${i}" ${m.status ? "" : "hidden"}>${esc(m.status || "")}</div>
         ${m.acts.length ? `<ul class="acts">${m.acts.map(a => `<li>✓ ${esc(a)}</li>`).join("")}</ul>` : ""}</div>`).join("");
   return `
-  <div class="view-head"><div><h2>Assistant</h2><p>Ask about your companies and deals, prepare outreach, or tell it what happened and it updates the desk. It only uses what is in the desk and what you tell it: it can't search the web.</p></div>
+  <div class="view-head"><div><h2>Assistant</h2><p>Ask about your companies and deals, find new companies or speakers, prepare outreach, or tell it what happened and it updates the desk. Facts from the web come with their source.</p></div>
   ${CHAT.msgs.length ? `<button class="btn" data-chat="clear" ${CHAT.busy ? "disabled" : ""}>New chat</button>` : ""}</div>
+  ${webBar()}
   <div class="chat">
-    ${msgs || `<section class="card empty-hero"><h3>What can I help with?</h3>
+    ${msgs ? msgs + APPROVALS.map(a => `<div class="card approve" role="group" aria-label="Approve change">
+        <b>Approve this change?</b><span>${esc(a.title)}</span>
+        <dl class="kv">${a.lines.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
+        <div class="rowbtns"><button class="btn primary small" data-chat="yes" data-id="${a.id}">Yes, make this change</button><button class="btn small" data-chat="no" data-id="${a.id}">No</button></div></div>`).join("") : ""}
+    ${msgs ? "" : `<section class="card empty-hero"><h3>What can I help with?</h3>
       <p>For example: "Add Nordlys Logistics, logistics, 250–999 employees, owner J.H." or "I emailed Sofie at ProServ today about renewing, follow up next Friday."</p>
       <div class="chips">${PROMPTS.map(p => `<button class="chip" data-chat="prompt" data-text="${esc(p)}">${esc(p)}</button>`).join("")}</div></section>`}
     <div class="composer">
@@ -1603,7 +1690,7 @@ document.addEventListener("click", e => {
   const ch = t.closest("[data-chat]");
   if (ch) { const k = ch.dataset.chat;
     if (k === "send") chatSend(); else if (k === "prompt") { CHAT.draft = ch.dataset.text.endsWith("…") ? ch.dataset.text.slice(0, -1) + " " : ""; if (CHAT.draft) { render(); const i = document.getElementById("chat-input"); i.focus(); i.setSelectionRange(i.value.length, i.value.length); } else chatSend(ch.dataset.text); }
-    else if (k === "stop" && CHAT.ctl) CHAT.ctl.abort(); else if (k === "clear" && !CHAT.busy) { CHAT.msgs = []; render(); }
+    else if (k === "stop" && CHAT.ctl) CHAT.ctl.abort(); else if (k === "yes" || k === "no") { const a = APPROVALS.find(x => x.id === ch.dataset.id); if (a) a[k](); } else if (k === "web") { WEB.state = "off"; render(); loadWebTools(true); } else if (k === "clear" && !CHAT.busy) { CHAT.msgs = []; render(); }
     return; }
   const a = t.closest("[data-act]");
   if (a) {
@@ -1639,8 +1726,8 @@ async function init() {
   render();
   const C = window.claude;
   if (!C || typeof C.use !== "function") { conn = "offline"; render(); return; }
-  const [db, user, dl, sm] = await Promise.all([C.use("db"), C.use("user"), C.use("downloads"), C.use("sample")]);
-  DL = dl; SAMPLE = sm;
+  const [db, user, dl, sm, mcp, perms] = await Promise.all([C.use("db"), C.use("user"), C.use("downloads"), C.use("sample"), C.use("mcp"), C.use("permissions")]);
+  DL = dl; SAMPLE = sm; MCP = mcp; PERMS = perms; initWeb().then(schedule);
   if (SAMPLE) { try { const lim = await SAMPLE.limits(); SAMPLE_TOOLS_MAX = (lim && lim.tools && lim.tools.maxCount) || 0; } catch (e) {} if (!SAMPLE_TOOLS_MAX) CHAT.noTools = true; }
   if (!db) { conn = "offline"; render(); return; }
   DB = db;

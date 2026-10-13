@@ -21,7 +21,12 @@ the repository as a later option. The Partnerships Manager is the only user for 
    desk (work queue and every company's scores) and can read one company in full, add companies
    and contacts, set a Fit rating the user states (a 2 needs a source), add evidence (always stored
    as an unchecked AI draft), add commercial evidence, create and update deals, and log contacts.
-   It has no delete tools and cannot browse the web. Changes are listed under its answer. It runs
+   It has no delete tools. **Every change waits for the user's Yes/No approval** in the chat;
+   reading and searching don't. Changes are listed under its answer. **Web search** (find
+   companies or speakers, check facts) works through the free *Parallel Search* connector, which
+   the user adds in claude.ai (Settings → Connectors) and turns on in the Assistant tab; the page
+   reads the connector's tool descriptions at run time. Facts from the web come with source URLs,
+   and search queries go to that outside service, so no contact details go into them. It runs
    on the user's own claude.ai account and asks permission on first use. Its instructions and
    tools are in the `Assistant` section of the source (`ASSISTANT_RULES`, `AGENT_TOOLS`); keep
    them in line with `docs/lean-spec.md`.
