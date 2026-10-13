@@ -17,6 +17,15 @@ the repository as a later option. The Partnerships Manager is the only user for 
    on the URL above. Use the data shapes below, new ids for new documents (`c-…`, `o-…`, `i-…`),
    and the document's current `version` (`if_version`) when changing an existing one.
 
+3. **Through the Assistant tab:** a chat with Claude inside the page. It sees a summary of the
+   desk (work queue and every company's scores) and can read one company in full, add companies
+   and contacts, set a Fit rating the user states (a 2 needs a source), add evidence (always stored
+   as an unchecked AI draft), add commercial evidence, create and update deals, and log contacts.
+   It has no delete tools and cannot browse the web. Changes are listed under its answer. It runs
+   on the user's own claude.ai account and asks permission on first use. Its instructions and
+   tools are in the `Assistant` section of the source (`ASSISTANT_RULES`, `AGENT_TOOLS`); keep
+   them in line with `docs/lean-spec.md`.
+
 Real partner data lives **only** in the page's database and in backups, never in this repository.
 
 ## Backups
