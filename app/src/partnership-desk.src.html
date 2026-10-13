@@ -288,6 +288,8 @@ body.ro .w { display: none !important; }
 .switch { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px 4px 4px; font-weight: 700; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
 .switch .knob { width: 34px; height: 20px; border-radius: 999px; background: var(--soft); position: relative; flex: none; }
 .switch .knob::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--muted); }
+.switch:disabled { opacity: 0.5; cursor: default; }
+.btn:disabled, textarea:disabled { opacity: 0.55; cursor: default; }
 .switch[aria-checked="true"] .knob { background: var(--q-quick); }
 .switch[aria-checked="true"] .knob::after { left: 16px; background: #fff; }
 @media (prefers-reduced-motion: no-preference) { .switch .knob::after { transition: left 0.15s ease; } }
@@ -1268,6 +1270,9 @@ let SAMPLE = null, SAMPLE_TOOLS_MAX = 0, MCP = null, PERMS = null;
 const WEB_SERVER = "Parallel Search";
 const WEB = { state: "off", tools: [], enabled: true }; // state: off | missing | allow | ready | denied | unsupported
 try { WEB.enabled = localStorage.getItem("cbs-desk-web") !== "off"; } catch (e) {}
+const AI = { enabled: true };
+try { AI.enabled = localStorage.getItem("cbs-desk-ai") !== "off"; } catch (e) {}
+const setAiEnabled = on => { AI.enabled = on; try { localStorage.setItem("cbs-desk-ai", on ? "on" : "off"); } catch (e) {} };
 const setWebEnabled = on => { WEB.enabled = on; try { localStorage.setItem("cbs-desk-web", on ? "on" : "off"); } catch (e) {} };
 const CHAT = { msgs: [], draft: "", busy: false, ctl: null, off: "", noTools: false };
 const PROMPTS = ["Find Danish companies that could sponsor a talk on AI and work", "What should I work on this week?", "Summarise the open deals and what is late", "Which companies are missing evidence or ratings?", "Help me prepare for a first meeting with…"];
@@ -1582,6 +1587,9 @@ async function loadWebTools(ask) {
   WEB.tools = out; WEB.state = out.length ? "ready" : (ask ? "unsupported" : "allow"); schedule();
 }
 function webBar() {
+  const claudeSw = `<button class="switch" role="switch" aria-checked="${AI.enabled}" data-chat="aitoggle"><span class="knob" aria-hidden="true"></span>Claude ${AI.enabled ? "on" : "off"}</button>`;
+  if (!AI.enabled) return `<div class="rowbtns webbar">${claudeSw}<button class="switch" role="switch" aria-checked="false" disabled><span class="knob" aria-hidden="true"></span>Web search off</button>
+    <span class="muted small">The assistant is off: nothing is sent to Claude or searched. The rest of the desk works as normal.</span></div>`;
   const m = {
     ready: `<button class="switch" role="switch" aria-checked="${WEB.enabled}" data-chat="webtoggle"><span class="knob" aria-hidden="true"></span>Web search ${WEB.enabled ? "on" : "off"}</button>
       <span class="muted small">${WEB.enabled ? `The assistant can search the web through ${WEB_SERVER}, an outside service. Don't paste contact details into questions you want searched.` : "The assistant only uses the desk's data and what you tell it."}</span>`,
@@ -1591,12 +1599,12 @@ function webBar() {
     unsupported: `<span class="pill info">Web search unavailable</span><span class="muted small">Web search can't run in this view.</span>`,
     off: "",
   }[WEB.state] || "";
-  return m ? `<div class="rowbtns webbar">${m}</div>` : "";
+  return `<div class="rowbtns webbar">${claudeSw}${m}</div>`;
 }
 
 async function chatSend(textIn) {
   const text = str(textIn ?? CHAT.draft);
-  if (!text || CHAT.busy || !SAMPLE) return;
+  if (!text || CHAT.busy || !SAMPLE || !AI.enabled) return;
   CHAT.draft = ""; CHAT.busy = true;
   CHAT.msgs.push({ role: "user", text });
   const ai = { role: "ai", text: "", acts: [], status: "Thinking…" };
@@ -1650,10 +1658,10 @@ function viewAssistant() {
         <div class="rowbtns"><button class="btn primary small" data-chat="yes" data-id="${a.id}">Yes, make this change</button><button class="btn small" data-chat="no" data-id="${a.id}">No</button></div></div>`).join("") : ""}
     ${msgs ? "" : `<section class="card empty-hero"><h3>What can I help with?</h3>
       <p>For example: "Add Nordlys Logistics, logistics, 250–999 employees, owner J.H." or "I emailed Sofie at ProServ today about renewing, follow up next Friday."</p>
-      <div class="chips">${PROMPTS.map(p => `<button class="chip" data-chat="prompt" data-text="${esc(p)}">${esc(p)}</button>`).join("")}</div></section>`}
+      <div class="chips">${PROMPTS.map(p => `<button class="chip" data-chat="prompt" data-text="${esc(p)}" ${AI.enabled ? "" : "disabled"}>${esc(p)}</button>`).join("")}</div></section>`}
     <div class="composer">
-      <textarea id="chat-input" rows="3" placeholder="Ask or tell the assistant something… (Enter to send, Shift+Enter for a new line)" aria-label="Message to the assistant">${esc(CHAT.draft)}</textarea>
-      <div class="rowbtns">${CHAT.busy ? `<button class="btn" data-chat="stop">Stop</button><span class="muted small">Working…</span>` : `<button class="btn primary" data-chat="send">Send</button>`}
+      <textarea id="chat-input" rows="3" ${AI.enabled ? "" : "disabled"} placeholder="${AI.enabled ? "Ask or tell the assistant something… (Enter to send, Shift+Enter for a new line)" : "Claude is off. Switch it on above to use the assistant."}" aria-label="Message to the assistant">${esc(CHAT.draft)}</textarea>
+      <div class="rowbtns">${CHAT.busy ? `<button class="btn" data-chat="stop">Stop</button><span class="muted small">Working…</span>` : `<button class="btn primary" data-chat="send" ${AI.enabled ? "" : "disabled"}>Send</button>`}
         <span class="muted small">${canWrite ? "Changes it makes are listed under its answer." : "Read only: it can answer but not change data."} Uses your claude.ai account.</span></div>
     </div>
   </div>`;
@@ -1700,6 +1708,7 @@ document.addEventListener("click", e => {
   if (ch) { const k = ch.dataset.chat;
     if (k === "send") chatSend(); else if (k === "prompt") { CHAT.draft = ch.dataset.text.endsWith("…") ? ch.dataset.text.slice(0, -1) + " " : ""; if (CHAT.draft) { render(); const i = document.getElementById("chat-input"); i.focus(); i.setSelectionRange(i.value.length, i.value.length); } else chatSend(ch.dataset.text); }
     else if (k === "stop" && CHAT.ctl) CHAT.ctl.abort(); else if (k === "yes" || k === "no") { const a = APPROVALS.find(x => x.id === ch.dataset.id); if (a) a[k](); } else if (k === "web") { setWebEnabled(true); WEB.state = "off"; render(); loadWebTools(true); }
+    else if (k === "aitoggle") { setAiEnabled(!AI.enabled); if (!AI.enabled && CHAT.ctl) CHAT.ctl.abort(); render(); toast(AI.enabled ? "Claude on." : "Claude off: the assistant won't send anything."); }
     else if (k === "webtoggle") { setWebEnabled(!WEB.enabled); render(); toast(WEB.enabled ? "Web search on." : "Web search off."); } else if (k === "clear" && !CHAT.busy) { CHAT.msgs = []; render(); }
     return; }
   const a = t.closest("[data-act]");
