@@ -8,17 +8,20 @@ A deliberately simple partnership system for **CBS Talks** (a student organisati
 Copenhagen Business School). It helps the Partnerships Manager decide which companies to
 work on each week, record why, and keep partnership knowledge across yearly board handovers.
 
-**Status:** designed, not yet in real use. **Decision (2026-10-12): it becomes a team tool in
-Microsoft 365 only**, built as a **Power Apps canvas app** with its data in **SharePoint lists**
-in the CBS Talks Team site (Excel add-ins appear blocked at CBS). Plan and steps:
-`docs/m365-team-tool.md`; list schema: `docs/powerapps-data-model.md`.
+**Status:** live, no real data yet. **Decision (2026-10-13): the system is the live Partnership
+Desk, a private claude.ai page with its own database**, used by the Partnerships Manager.
+The user adds data in the page or asks Claude to add it. Page URL, data shapes and backups:
+`docs/live-app.md`. The Microsoft 365 plan (Power Apps + SharePoint lists,
+`docs/m365-team-tool.md`) is paused and kept as a later option.
 
 ## Where things are
 
 | Path | What it is |
 |---|---|
 | `docs/lean-spec.md` | **The only specification to build from.** Model, rules, CRM workflow, schema, dashboard, plan |
-| `docs/m365-team-tool.md` | Microsoft 365 team-tool plan: decisions, architecture, steps |
+| `docs/live-app.md` | **The live Partnership Desk:** URL, how to add data (page or Claude), data shapes, backups |
+| `app/src/partnership-desk.src.html` | Live page source (`__LOGO__` placeholder); `tools/build_app.py` writes `app/partnership-desk.html` |
+| `docs/m365-team-tool.md` | Paused Microsoft 365 plan (Power Apps + SharePoint lists) |
 | `docs/powerapps-data-model.md` | SharePoint lists and columns for the Power Apps version |
 | `powerapps/` | Power Apps build material: list setup workbook, formulas, build guides |
 | `tools/build_sharepoint_setup.py` | Generates `powerapps/sharepoint-lists-setup.xlsx` |
@@ -44,16 +47,17 @@ in the CBS Talks Team site (Excel add-ins appear blocked at CBS). Plan and steps
 5. **Keep it maintainable by volunteers:** ~15–20 minutes research per company, ~1 minute to
    log a contact. Prefer removing features to adding them.
 6. **The spec is the source of truth.** If the logic changes, update `docs/lean-spec.md`
-   first, then the workbook generator and the demo, so all three stay consistent.
+   first, then the live page, the workbook generator and the demo, so they stay consistent.
 
 ## Data and privacy
 
 - Example data must be **fictional** and clearly marked "(example)" or "fictional".
 - **Never commit real partner data, contact details or amounts** to this repository. Real
-  data lives in the CBS Talks shared drive.
+  data lives in the live page's database and in backup files in the user's CBS OneDrive.
 - Contacts: work data only (published work email or LinkedIn), no guessed emails, no
   personal opinions (GDPR). See `docs/cheat-sheets/conversations-and-outreach.md`.
-- The demo carries the CBS Talks logo: don't publish it anywhere public without the user's okay.
+- The demo and the live page carry the CBS Talks logo: don't publish them anywhere public
+  without the user's okay. The live page is private; only the user changes its sharing.
 
 ## Commands
 
@@ -63,6 +67,9 @@ python3 tools/build_workbook.py
 
 # Recalculate and check formulas (needs LibreOffice with Calc); must report 0 errors
 python3 <xlsx-skill>/scripts/recalc.py template/CBS-Talks-Partnerships.xlsx 200
+
+# Rebuild the live page, then publish app/partnership-desk.html to the URL in docs/live-app.md
+python3 tools/build_app.py
 
 # Rebuild the demo: replace __LOGO__ in demo/src/partnership-desk.src.html with the
 # base64 of demo/src/cbs-talks-logo.jpg and write demo/partnership-desk.html
@@ -74,9 +81,10 @@ no `FILTER`, `SORT`, `UNIQUE`, `XLOOKUP` or other spilling functions.
 
 ## Don't
 
-- Don't move the data out of Microsoft 365 or add a second data store: the SharePoint lists are
-  the source of truth. Don't rename or remove list columns without updating
-  `docs/powerapps-data-model.md`, the setup generator and the app formulas together.
+- Don't add a second data store: the live page's database is the source of truth. Don't rename
+  stored fields without updating `docs/live-app.md` and migrating the existing documents.
+- When adding data for the user with `ArtifactData`, read first and pin writes with `if_version`;
+  never invent companies, contacts or facts, and keep the evidence-label rules.
 - Power Apps formulas in `powerapps/` use Swedish-locale separators (`;` between arguments,
   `;;` between actions) because that is how the maintainer's Power Apps is set up.
 - The GitHub repository should be private, with access for the CBS Talks team only (it was still

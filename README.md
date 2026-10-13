@@ -7,12 +7,15 @@ A deliberately simple system to help the CBS Talks Partnerships Manager decide
 which companies to work on, record why, and keep partnership knowledge across
 board handovers.
 
-**Start here:** [`docs/lean-spec.md`](docs/lean-spec.md), the definitive specification. The spreadsheet MVP is in `template/`.
+**Start here:** [`docs/lean-spec.md`](docs/lean-spec.md), the definitive specification. The system runs as the live
+Partnership Desk, a private claude.ai page: see [`docs/live-app.md`](docs/live-app.md).
 
 | Document | Purpose |
 |---|---|
 | [`docs/lean-spec.md`](docs/lean-spec.md) | Model (Fit + Access), priority logic, CRM workflow, fields, schema, dashboard, implementation plan |
-| [`docs/m365-team-tool.md`](docs/m365-team-tool.md) | Plan for the Microsoft 365 team tool (Power Apps + SharePoint lists) |
+| [`docs/live-app.md`](docs/live-app.md) | **The live Partnership Desk**: link, adding data, backups, data shapes |
+| [`app/src/partnership-desk.src.html`](app/src/partnership-desk.src.html) | Live page source; build with `python3 tools/build_app.py` |
+| [`docs/m365-team-tool.md`](docs/m365-team-tool.md) | Paused plan for a Microsoft 365 version (Power Apps + SharePoint lists) |
 | [`docs/powerapps-data-model.md`](docs/powerapps-data-model.md) | SharePoint lists and columns for the Power Apps version |
 | [`powerapps/step3-app-skeleton.md`](powerapps/step3-app-skeleton.md) | Step 3: create the app, load the lists, calculate Fit/Access/quadrant, checkpoint |
 | [`powerapps/step4a-today-screen.md`](powerapps/step4a-today-screen.md) | Step 4a: the Today screen (weekly work queue: renewals, follow-ups, prospects, paths) |

@@ -1,3 +1,6 @@
+> **Paused (2026-10-13).** The system now runs as the live Partnership Desk on claude.ai
+> (`docs/live-app.md`). This plan is kept as an option for moving to Microsoft 365 later.
+
 # CBS Talks Partnership Desk — Microsoft 365 team tool plan
 
 **Decisions:**
