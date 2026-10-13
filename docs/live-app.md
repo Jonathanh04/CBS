@@ -11,8 +11,10 @@ the repository as a later option. The Partnerships Manager is the only user for 
 
 ## Adding data
 
-1. **In the page:** Add company, rate Fit (click a number), add commercial evidence, contacts and
-   evidence, create deals, log contacts, move deals through the pipeline.
+1. **In the page:** Add company (or **Paste a list** of names, one per line), rate Fit (click a number),
+   add commercial evidence, contacts and evidence, create deals, log contacts, drag deals through
+   the pipeline, record events and themes. **Ctrl+K** searches everything; the last change can be
+   undone from the message that confirms it.
 2. **Through Claude:** Claude reads and writes the page's database with the `ArtifactData` tool
    on the URL above. Use the data shapes below, new ids for new documents (`c-…`, `o-…`, `i-…`),
    and the document's current `version` (`if_version`) when changing an existing one.
@@ -49,7 +51,8 @@ Microsoft 365 later.
 | `companies` | `c-<random>` (examples: `ex-<name>`) | `name`, `industry` (§5.1), `size`, `owner` (a team name), `website`, `intro` (intro path: Access 2), `need` (specific need), `path` (`{action, started}` or null), `dnc` (bool), `fit` (`{f1, f2, f3, f5}`, each `[rating 0–2 or null, reason, source]`), `fitReviewed`, `commercial` (list of `{k, type, desc, src, amount, year, on, by}`), `contacts` (list of `{k, name, title, role (§5.2), rel: Named/Champion, alumni, email, linkedin, source, verified, left, dnc}`), `evidence` (list of `{k, crit, text, label, src, reasoning, ai, checked}`), `example` |
 | `opps` | `o-<random>` | `co` (company id), `type`, `stage`, `owner`, `contact` (contact name), `renewal`, `kind` (Cash/In-kind/Non-cash), `pkg`, `proposed`, `agreed`, `noncash`, `why`, `next`, `due`, `end`, `renewalDate`, `satisfaction`, `satReason`, `lost`, `nurture`, `nurtureUntil`, `closed` |
 | `interactions` | `i-<random>` | `date`, `co`, `opp`, `contact`, `by`, `channel`, `dir` (Sent by us / Received from them / Two-way), `summary`, `outcome` |
-| `config` | `settings` | `semester` (`{name, start, end, target}`), `packages` (list of `{name, price}`) |
+| `events` | `e-<random>` | `title`, `date`, `theme`, `attendance`, `studyLines`, `partners` (list of company ids), `reportSent`, `notes` |
+| `config` | `settings` | `semester` (`{name, start, end, target}`), `packages` (list of `{name, price}`), `themes` (list of `{name, year, active}`) |
 | `config` | `team` | `members` (list of `{name, role, active}`) |
 
 Dates are `yyyy-mm-dd` text. `k` is a short random key for items inside a company's lists.
