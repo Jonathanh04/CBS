@@ -285,6 +285,12 @@ body.ro .w { display: none !important; }
 .kv dd { margin: 0; }
 .chat { display: grid; gap: 12px; }
 .approve { padding: 14px 16px; display: grid; gap: 8px; border-left: 4px solid var(--gold); max-width: min(80ch, 100%); }
+.switch { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px 4px 4px; font-weight: 700; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
+.switch .knob { width: 34px; height: 20px; border-radius: 999px; background: var(--soft); position: relative; flex: none; }
+.switch .knob::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--muted); }
+.switch[aria-checked="true"] .knob { background: var(--q-quick); }
+.switch[aria-checked="true"] .knob::after { left: 16px; background: #fff; }
+@media (prefers-reduced-motion: no-preference) { .switch .knob::after { transition: left 0.15s ease; } }
 .webbar { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 .msg { max-width: min(80ch, 100%); padding: 12px 14px; border-radius: 12px; overflow-wrap: anywhere; line-height: 1.5; }
 .msg.user, .msg .mt { white-space: pre-wrap; }
@@ -1260,7 +1266,9 @@ async function deleteCompany(c) {
 /* ---------- Assistant (Claude inside the desk) ---------- */
 let SAMPLE = null, SAMPLE_TOOLS_MAX = 0, MCP = null, PERMS = null;
 const WEB_SERVER = "Parallel Search";
-const WEB = { state: "off", tools: [] }; // off | missing | allow | ready | denied | unsupported
+const WEB = { state: "off", tools: [], enabled: true }; // state: off | missing | allow | ready | denied | unsupported
+try { WEB.enabled = localStorage.getItem("cbs-desk-web") !== "off"; } catch (e) {}
+const setWebEnabled = on => { WEB.enabled = on; try { localStorage.setItem("cbs-desk-web", on ? "on" : "off"); } catch (e) {} };
 const CHAT = { msgs: [], draft: "", busy: false, ctl: null, off: "", noTools: false };
 const PROMPTS = ["Find Danish companies that could sponsor a talk on AI and work", "What should I work on this week?", "Summarise the open deals and what is late", "Which companies are missing evidence or ratings?", "Help me prepare for a first meeting with…"];
 
@@ -1539,7 +1547,7 @@ Web search is ON. You can search the web (web_search) and read pages (web_fetch)
 - Search queries go to an outside search service: never put contact details or private notes from the desk into a query.
 - Don't add anything you found to the desk unless the user asks. When they do, add companies unrated and record what you found with add_evidence, always with the source URL.`;
 const WEB_RULES_OFF = `
-Web search is OFF: you cannot browse the web. If the user asks you to find companies or people online, tell them to turn on web search at the top of the Assistant tab.`;
+Web search is OFF: you cannot browse the web. If the user asks you to find companies or people online, tell them to switch web search on at the top of the Assistant tab.`;
 
 async function initWeb() {
   if (!MCP) { WEB.state = "unsupported"; return; }
@@ -1575,7 +1583,8 @@ async function loadWebTools(ask) {
 }
 function webBar() {
   const m = {
-    ready: `<span class="pill good">Web search on</span><span class="muted small">Searches go to ${WEB_SERVER}, an outside service. Don't paste contact details into questions you want searched.</span>`,
+    ready: `<button class="switch" role="switch" aria-checked="${WEB.enabled}" data-chat="webtoggle"><span class="knob" aria-hidden="true"></span>Web search ${WEB.enabled ? "on" : "off"}</button>
+      <span class="muted small">${WEB.enabled ? `The assistant can search the web through ${WEB_SERVER}, an outside service. Don't paste contact details into questions you want searched.` : "The assistant only uses the desk's data and what you tell it."}</span>`,
     allow: `<span class="pill info">Web search off</span><button class="btn small" data-chat="web">Turn on web search</button>`,
     denied: `<span class="pill info">Web search off</span><span class="muted small">You declined ${WEB_SERVER} for this page. Turn it on again from this page's Permissions menu, then reload.</span>`,
     missing: `<span class="pill info">Web search off</span><span class="muted small">To search the web, add the free <b>${WEB_SERVER}</b> connector in claude.ai (Settings → Connectors), then reload this page.</span>`,
@@ -1592,7 +1601,7 @@ async function chatSend(textIn) {
   CHAT.msgs.push({ role: "user", text });
   const ai = { role: "ai", text: "", acts: [], status: "Thinking…" };
   CHAT.msgs.push(ai);
-  const webOn = WEB.state === "ready" && !CHAT.noTools;
+  const webOn = WEB.state === "ready" && WEB.enabled && !CHAT.noTools;
   const turns = [{ role: "user", content: ASSISTANT_RULES + (webOn ? WEB_RULES_ON : WEB_RULES_OFF) + "\n\nCURRENT DESK DATA:\n" + deskSnapshot() }];
   CHAT.msgs.slice(-21, -1).forEach(m => { if (m.text && !(m.role === "ai" && m.failed)) turns.push({ role: m.role === "user" ? "user" : "assistant", content: m.text }); });
   while (turns.length > 1 && turns[1].role === "assistant") turns.splice(1, 1);
@@ -1690,7 +1699,8 @@ document.addEventListener("click", e => {
   const ch = t.closest("[data-chat]");
   if (ch) { const k = ch.dataset.chat;
     if (k === "send") chatSend(); else if (k === "prompt") { CHAT.draft = ch.dataset.text.endsWith("…") ? ch.dataset.text.slice(0, -1) + " " : ""; if (CHAT.draft) { render(); const i = document.getElementById("chat-input"); i.focus(); i.setSelectionRange(i.value.length, i.value.length); } else chatSend(ch.dataset.text); }
-    else if (k === "stop" && CHAT.ctl) CHAT.ctl.abort(); else if (k === "yes" || k === "no") { const a = APPROVALS.find(x => x.id === ch.dataset.id); if (a) a[k](); } else if (k === "web") { WEB.state = "off"; render(); loadWebTools(true); } else if (k === "clear" && !CHAT.busy) { CHAT.msgs = []; render(); }
+    else if (k === "stop" && CHAT.ctl) CHAT.ctl.abort(); else if (k === "yes" || k === "no") { const a = APPROVALS.find(x => x.id === ch.dataset.id); if (a) a[k](); } else if (k === "web") { setWebEnabled(true); WEB.state = "off"; render(); loadWebTools(true); }
+    else if (k === "webtoggle") { setWebEnabled(!WEB.enabled); render(); toast(WEB.enabled ? "Web search on." : "Web search off."); } else if (k === "clear" && !CHAT.busy) { CHAT.msgs = []; render(); }
     return; }
   const a = t.closest("[data-act]");
   if (a) {
